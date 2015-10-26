@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "19A9439F70BEEAC8AD0391FA81686B50867FD7D1",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "765F430308EE7293059B07A10AB7CA4F3418032F" : 0,
+    "19A9439F70BEEAC8AD0391FA81686B50867FD7D1" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "D6361251-61F4-47A9-8841-4A0000215399",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "765F430308EE7293059B07A10AB7CA4F3418032F" : "notificare-push-lib-unity\/ios\/Libs\/notificare-push-lib-1.6.0\/",
+    "19A9439F70BEEAC8AD0391FA81686B50867FD7D1" : "notificare-push-lib-unity\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "notificare-push-lib-unity-ios",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "ios\/notificare-push-lib-unity-ios.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:Notificare\/notificare-push-lib-unity.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "19A9439F70BEEAC8AD0391FA81686B50867FD7D1"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/Notificare\/notificare-push-lib.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "765F430308EE7293059B07A10AB7CA4F3418032F"
+    }
+  ]
+}
