@@ -13,13 +13,10 @@
 		4E237F9D1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237F9C1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m */; };
 		4E237FA01BDA6B2000118F8A /* SKPayment+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237F9F1BDA6B2000118F8A /* SKPayment+Dictionary.m */; };
 		4E237FA31BDA726200118F8A /* NSDate+ISOString.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237FA21BDA726200118F8A /* NSDate+ISOString.m */; };
-		4E7FD8A41BCE7B0C002CDC34 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 4E7FD82C1BCE7B0C002CDC34 /* .gitignore */; };
-		4E7FD8A51BCE7B0C002CDC34 /* CHANGELOG.md in Sources */ = {isa = PBXBuildFile; fileRef = 4E7FD82D1BCE7B0C002CDC34 /* CHANGELOG.md */; };
 		4E7FD8A61BCE7B0C002CDC34 /* DefaultTheme.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4E7FD82E1BCE7B0C002CDC34 /* DefaultTheme.bundle */; };
 		4E7FD8A71BCE7B0C002CDC34 /* libNotificarePushLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E7FD82F1BCE7B0C002CDC34 /* libNotificarePushLib.a */; };
 		4E7FD8A81BCE7B0C002CDC34 /* Notificare.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4E7FD8A11BCE7B0C002CDC34 /* Notificare.plist */; };
 		4E7FD8A91BCE7B0C002CDC34 /* NotificareTags.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4E7FD8A21BCE7B0C002CDC34 /* NotificareTags.plist */; };
-		4E7FD8AA1BCE7B0C002CDC34 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 4E7FD8A31BCE7B0C002CDC34 /* README.md */; };
 		4E7FD8AB1BCE7B1E002CDC34 /* NotificarePushLibUnity.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E7FD79B1BCE795A002CDC34 /* NotificarePushLibUnity.m */; };
 /* End PBXBuildFile section */
 
@@ -40,8 +37,6 @@
 		4E7FD79B1BCE795A002CDC34 /* NotificarePushLibUnity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificarePushLibUnity.m; sourceTree = "<group>"; };
 		4E7FD8241BCE7ACB002CDC34 /* notificare-push-lib-unity-ios.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "notificare-push-lib-unity-ios.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4E7FD8271BCE7ACB002CDC34 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		4E7FD82C1BCE7B0C002CDC34 /* .gitignore */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
-		4E7FD82D1BCE7B0C002CDC34 /* CHANGELOG.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = CHANGELOG.md; sourceTree = "<group>"; };
 		4E7FD82E1BCE7B0C002CDC34 /* DefaultTheme.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = DefaultTheme.bundle; sourceTree = "<group>"; };
 		4E7FD82F1BCE7B0C002CDC34 /* libNotificarePushLib.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libNotificarePushLib.a; sourceTree = "<group>"; };
 		4E7FD8331BCE7B0C002CDC34 /* ActionDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActionDelegate.h; sourceTree = "<group>"; };
@@ -128,7 +123,6 @@
 		4E7FD8A01BCE7B0C002CDC34 /* NotificareWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotificareWebView.h; sourceTree = "<group>"; };
 		4E7FD8A11BCE7B0C002CDC34 /* Notificare.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Notificare.plist; sourceTree = "<group>"; };
 		4E7FD8A21BCE7B0C002CDC34 /* NotificareTags.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = NotificareTags.plist; sourceTree = "<group>"; };
-		4E7FD8A31BCE7B0C002CDC34 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,14 +195,11 @@
 		4E7FD82B1BCE7B0C002CDC34 /* notificare-push-lib-1.6.0 */ = {
 			isa = PBXGroup;
 			children = (
-				4E7FD82C1BCE7B0C002CDC34 /* .gitignore */,
-				4E7FD82D1BCE7B0C002CDC34 /* CHANGELOG.md */,
 				4E7FD82E1BCE7B0C002CDC34 /* DefaultTheme.bundle */,
 				4E7FD82F1BCE7B0C002CDC34 /* libNotificarePushLib.a */,
 				4E7FD8301BCE7B0C002CDC34 /* Notificare */,
 				4E7FD8A11BCE7B0C002CDC34 /* Notificare.plist */,
 				4E7FD8A21BCE7B0C002CDC34 /* NotificareTags.plist */,
-				4E7FD8A31BCE7B0C002CDC34 /* README.md */,
 			);
 			path = "notificare-push-lib-1.6.0";
 			sourceTree = "<group>";
@@ -597,7 +588,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4E7FD8A41BCE7B0C002CDC34 /* .gitignore in Resources */,
 				4E7FD8A91BCE7B0C002CDC34 /* NotificareTags.plist in Resources */,
 				4E7FD8A81BCE7B0C002CDC34 /* Notificare.plist in Resources */,
 				4E7FD8A61BCE7B0C002CDC34 /* DefaultTheme.bundle in Resources */,
@@ -615,8 +605,6 @@
 				4E237F9D1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m in Sources */,
 				4E237F9A1BDA58C500118F8A /* SKDownload+Dictionary.m in Sources */,
 				4E237FA31BDA726200118F8A /* NSDate+ISOString.m in Sources */,
-				4E7FD8AA1BCE7B0C002CDC34 /* README.md in Sources */,
-				4E7FD8A51BCE7B0C002CDC34 /* CHANGELOG.md in Sources */,
 				4E237F971BD9A7BD00118F8A /* NotificareNotification+Dictionary.m in Sources */,
 				4E237FA01BDA6B2000118F8A /* SKPayment+Dictionary.m in Sources */,
 				4E237F941BD9A79900118F8A /* NotificareProduct+Dictionary.m in Sources */,

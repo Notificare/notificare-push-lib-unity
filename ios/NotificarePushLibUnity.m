@@ -12,6 +12,9 @@
 
 #import "NotificareNotification+Dictionary.h"
 #import "NotificareProduct+Dictionary.h"
+#import "SKPayment+Dictionary.h"
+#import "SKPaymentTransaction+Dictionary.h"
+#import "SKDownload+Dictionary.h"
 
 #pragma mark - C -
 
@@ -29,8 +32,8 @@ static void end(void) {
     pushLibUnity = nil;
 }
 
-NSString *stringWithChar(const char *cString) {
-    return cString ? [NSString stringWithUTF8String:cString] : nil;
+NSString *stringWithChar(const char *utf8String) {
+    return utf8String ? [NSString stringWithUTF8String:utf8String] : nil;
 }
 
 char *cStringCopy(const char* cString) {
@@ -82,12 +85,43 @@ id objectFromJSONString(NSString *jsonString) {
     return object;
 }
 
-void registerDelegateCallback(const char* delegateMethod, CStringCallback callback) {
+void performBasicCallback(BasicCallback callback, id object) {
+    NSString *jsonString = jsonStringFromObject(object);
+    
+    if (callback) {
+        char *strCopy = cStringCopy([jsonString UTF8String]);
+        
+        callback(strCopy);
+        
+        free(strCopy);
+    }
+}
+
+NSArray *filterDownloads(NSArray *downloadDicts) {
+    NSMutableArray *filteredDownloads = [NSMutableArray array];
+    
+    for (NSDictionary *downloadDict in downloadDicts) {
+        for (SKPaymentTransaction *transaction in [[SKPaymentQueue defaultQueue] transactions]) {
+            for (SKDownload *download in transaction.downloads) {
+                if ([download.contentIdentifier isEqualToString:downloadDict[@"contentIdentifier"]]) {
+                    [filteredDownloads addObject:download];
+                    break;
+                }
+            }
+        }
+    }
+    
+    return [filteredDownloads copy];
+}
+
+#pragma mark - Exported Functions
+
+void _registerDelegateCallback(const char* delegateMethod, DelegateCallback callback) {
     NSMutableDictionary *delegateCallbacks = [[NotificarePushLibUnity shared] delegateCallbacks];
     NSString *key = stringWithChar(delegateMethod);
     
     if (key && callback) {
-        StringBlock stringBlock = ^NSString *(NSString *str) {
+        DelegateBlock delegateBlock = ^NSString *(NSString *str) {
             char *strCopy = cStringCopy([str UTF8String]);
             
             char *result = callback(strCopy);
@@ -98,11 +132,11 @@ void registerDelegateCallback(const char* delegateMethod, CStringCallback callba
         };
         
         // I think I have to make a copy here because the callback pointer is going to be freed by managed code
-        delegateCallbacks[key] = [stringBlock copy];
+        delegateCallbacks[key] = [delegateBlock copy];
     }
 }
 
-void unregisterDelegateCallback(const char* delegateMethod) {
+void _unregisterDelegateCallback(const char* delegateMethod) {
     NSMutableDictionary *delegateCallbacks = [[NotificarePushLibUnity shared] delegateCallbacks];
     NSString *key = stringWithChar(delegateMethod);
     
@@ -111,33 +145,15 @@ void unregisterDelegateCallback(const char* delegateMethod) {
     }
 }
 
-NSString *performCallback(CStringCallback callback, id object) {
-    NSString *jsonString = jsonStringFromObject(object);
-    
-    if (callback) {
-        char *strCopy = cStringCopy([jsonString UTF8String]);
-        
-        char *result = callback(strCopy);
-        
-        free(strCopy);
-        
-        return stringWithChar(result);
-    }
-    
-    return nil;
-}
-
-#pragma mark - Notificare Forwarders
-
-void launch() {
+void _launch() {
     [[NotificarePushLib shared] launch];
 }
 
-void registerForNotifications() {
+void _registerForNotifications() {
     [[NotificarePushLib shared] registerForNotifications];
 }
 
-void registerUserNotifications() {
+void _registerUserNotifications() {
     [[NotificarePushLib shared] registerUserNotifications];
 }
 
@@ -145,178 +161,185 @@ bool checkRemoteNotifications() {
     return [[NotificarePushLib shared] checkRemoteNotifications] ? true : false;
 }
 
-#warning Unity can't pass NSDictionary objects. Should probably only be used by appDelegate anyway.
-void handleOptions(NSDictionary *options) {
-    [[NotificarePushLib shared] handleOptions:options];
+void _handleOptions(const char *optionsJSON) {
+    NSString *jsonString = stringWithChar(optionsJSON);
+    NSDictionary *optionsInfo = objectFromJSONString(jsonString);
+    
+    [[NotificarePushLib shared] handleOptions:optionsInfo[@"options"]];
 }
 
-void registerDevice(const char *token, CStringCallback infoCallback, CStringCallback errorCallback) {
+void _registerDevice(const char *token, BasicCallback infoCallback, BasicCallback errorCallback) {
     NSData *tokenData = [NSData dataWithBytes:token length:strlen(token)];
     
     [[NotificarePushLib shared] registerDevice:tokenData completionHandler:^(NSDictionary *info) {
-        performCallback(infoCallback, info);
+        NSDictionary *registrationInfo = @{@"registration": info};
+        performBasicCallback(infoCallback, registrationInfo);
     } errorHandler:^(NSError *error) {
-#warning Have to verify that NSError is a valid JSON object
-        performCallback(errorCallback, error);
+        NSDictionary *errorInfo = @{@"error": error.description};
+        performBasicCallback(errorCallback, errorInfo);
     }];
 }
 
-void registerDeviceWithUser(const char *token, const char *userID, const char *username, CStringCallback infoCallback, CStringCallback errorCallback) {
+void _registerDeviceWithUser(const char *token, const char *userID, const char *username, BasicCallback infoCallback, BasicCallback errorCallback) {
     NSData *tokenData = [NSData dataWithBytes:token length:strlen(token)];
     NSString *userIDString = userID ? [NSString stringWithUTF8String:userID] : nil;
     NSString *usernameString = username ? [NSString stringWithUTF8String:username] : nil;
+    
+#warning Might need to wrap callbacks in codeblocks (copies) because pointers to callbacks might be freed prematurely
     
     [[NotificarePushLib shared] registerDevice:tokenData
                                     withUserID:userIDString
                                   withUsername:usernameString
                              completionHandler:^(NSDictionary *info) {
-                                 performCallback(infoCallback, info);
+                                 NSDictionary *registrationInfo = @{@"registration": info};
+                                 performBasicCallback(infoCallback, registrationInfo);
                              }
                                   errorHandler:^(NSError *error) {
-#warning Have to verify that NSError is a valid JSON object
-                                      performCallback(errorCallback, error);
+                                      NSDictionary *errorInfo = @{@"error": error.description};
+                                      performBasicCallback(errorCallback, errorInfo);
                                   }];
 }
 
-void unregisterDevice() {
+void _unregisterDevice() {
     [[NotificarePushLib shared] unregisterDevice];
 }
 
-void updateBadge(int badge) {
+void _updateBadge(int badge) {
     [[NotificarePushLib shared] updateBadge:[NSNumber numberWithInt:badge]];
 }
 
-void openNotification(const char* notificationJSON) {
+void _openNotification(const char* notificationJSON) {
     NSString *jsonString = stringWithChar(notificationJSON);
     NSDictionary *notificationInfo = objectFromJSONString(jsonString);
     
-    [[NotificarePushLib shared] openNotification:notificationInfo];
+    [[NotificarePushLib shared] openNotification:notificationInfo[@"notification"]];
 }
 
-#warning Unity can't pass NSDictionary objects
-void logOpenNotification(const char* notificationJSON) {
+void _logOpenNotification(const char* notificationJSON) {
     NSString *jsonString = stringWithChar(notificationJSON);
     NSDictionary *notificationInfo = objectFromJSONString(jsonString);
     
-    [[NotificarePushLib shared] logOpenNotification:notificationInfo];
+    [[NotificarePushLib shared] logOpenNotification:notificationInfo[@"notification"]];
 }
 
-void getNotification(const char *notificationID, CStringCallback infoCallback, CStringCallback errorCallback) {
+void _getNotification(const char *notificationID, BasicCallback infoCallback, BasicCallback errorCallback) {
     NSString *notificationIDString = notificationID ? [NSString stringWithUTF8String:notificationID] : nil;
     
     [[NotificarePushLib shared] getNotification:notificationIDString
                               completionHandler:^(NSDictionary *info) {
-                                  performCallback(infoCallback, info);
+                                  NSDictionary *notificationInfo = @{@"notification": info};
+                                  performBasicCallback(infoCallback, notificationInfo);
                               }
                                    errorHandler:^(NSError *error) {
-                                       const char *errorCString = [[error description] UTF8String];
-                                       errorCallback(errorCString);
+                                       NSDictionary *errorInfo = @{@"error": error.description};
+                                       performBasicCallback(errorCallback, errorInfo);
                                    }];
 }
 
-void clearNotification(const char *notification) {
+void _clearNotification(const char *notification) {
     NSString *notificationString = notification ? [NSString stringWithUTF8String:notification] : nil;
     [[NotificarePushLib shared] clearNotification:notificationString];
 }
 
-void startLocationUpdates() {
+void _startLocationUpdates() {
     [[NotificarePushLib shared] startLocationUpdates];
 }
 
-bool checkLocationUpdates() {
+bool _checkLocationUpdates() {
     return [[NotificarePushLib shared] checkLocationUpdates] ? true : false;
 }
 
-void stopLocationUpdates() {
+void _stopLocationUpdates() {
     [[NotificarePushLib shared] stopLocationUpdates];
 }
 
 #warning Needs confirmation that it properly overlays on top of Unity view
-void openUserPreferences() {
+void _openUserPreferences() {
     [[NotificarePushLib shared] openUserPreferences];
 }
 
-int myBadge() {
+int _myBadge() {
     return [[NotificarePushLib shared] myBadge];
 }
 
-void fetchProducts(CStringCallback productsCallback, CStringCallback errorCallback) {
+void _fetchProducts(BasicCallback productsCallback, BasicCallback errorCallback) {
     [[NotificarePushLib shared] fetchProducts:^(NSArray *products) {
         NSMutableArray *dictionaryProducts = [NSMutableArray array];
         for (NotificareProduct *product in products) {
             [dictionaryProducts addObject:[product toDictionary]];
         }
-#warning Have to verify that array consists of NotificareProduct objects
-        performCallback(productsCallback, dictionaryProducts);
+        NSDictionary *productsInfo = @{@"products": dictionaryProducts};
+        performBasicCallback(productsCallback, productsInfo);
     } errorHandler:^(NSError *error) {
-#warning Have to verify that NSError is a valid JSON object
-        performCallback(errorCallback, error);
+        NSDictionary *errorInfo = @{@"error": error.description};
+        performBasicCallback(errorCallback, errorInfo);
     }];
 }
 
-void fetchPurchasedProducts(CStringCallback productsCallback, CStringCallback errorCallback) {
+void _fetchPurchasedProducts(BasicCallback productsCallback, BasicCallback errorCallback) {
     [[NotificarePushLib shared] fetchPurchasedProducts:^(NSArray *products) {
         NSMutableArray *dictionaryProducts = [NSMutableArray array];
         for (NotificareProduct *product in products) {
             [dictionaryProducts addObject:[product toDictionary]];
         }
-#warning Have to verify that array consists of NotificareProduct objects
-        performCallback(productsCallback, dictionaryProducts);
+        performBasicCallback(productsCallback, dictionaryProducts);
     } errorHandler:^(NSError *error) {
-#warning Have to verify that NSError is a valid JSON object
-        performCallback(errorCallback, error);
+        NSDictionary *errorInfo = @{@"error": error.description};
+        performBasicCallback(errorCallback, errorInfo);
     }];
 }
 
-void fetchProduct(const char *productIdentifier, CStringCallback productCallback, CStringCallback errorCallback) {
+void _fetchProduct(const char *productIdentifier, BasicCallback productCallback, BasicCallback errorCallback) {
     NSString *productIdentifierString = stringWithChar(productIdentifier);
     
     [[NotificarePushLib shared] fetchProduct:productIdentifierString
                            completionHandler:^(NotificareProduct *product) {
-                               performCallback(productCallback, [product toDictionary]);
+                               NSDictionary *productInfo = @{@"product": [product toDictionary]};
+                               performBasicCallback(productCallback, productInfo);
                            }
                                 errorHandler:^(NSError *error) {
-#warning Have to verify that NSError is a valid JSON object
-                                    performCallback(errorCallback, error);
+                                    NSDictionary *errorInfo = @{@"error": error.description};
+                                    performBasicCallback(errorCallback, errorInfo);
                                 }];
 }
 
-void buyProduct(const char *productJSON) {
+void _buyProduct(const char *productJSON) {
     NSString *jsonString = stringWithChar(productJSON);
-    NSDictionary *info = objectFromJSONString(jsonString);
-    NotificareProduct *notificareProduct = [[NotificareProduct alloc] initWithDictionary:info];
+    NSDictionary *productInfo = objectFromJSONString(jsonString);
+    NotificareProduct *notificareProduct = [[NotificareProduct alloc] initWithDictionary:productInfo[@"product"]];
     
     [[NotificarePushLib shared] buyProduct:notificareProduct];
 }
 
-void pauseDownloads(const char* downloadsJSON) {
+void _pauseDownloads(const char* downloadsJSON) {
     NSString *jsonString = stringWithChar(downloadsJSON);
-    NSArray *dictionaryDownloads = objectFromJSONString(jsonString);
+    NSDictionary *downloadsInfo = objectFromJSONString(jsonString);
     
-    // Have to loop through pending transactions and downloads to match
+    NSArray *downloads = filterDownloads(downloadsInfo[@"downloads"]);
     [[NotificarePushLib shared] pauseDownloads:downloads];
 }
 
-void cancelDownloads(const char* downloadsJSON) {
+void _cancelDownloads(const char* downloadsJSON) {
     NSString *jsonString = stringWithChar(downloadsJSON);
-    NSArray *dictionaryDownloads = objectFromJSONString(jsonString);
+    NSDictionary *downloadsInfo = objectFromJSONString(jsonString);
     
-    // Have to loop through pending transactions and downloads to match
+    NSArray *downloads = filterDownloads(downloadsInfo[@"downloads"]);
     [[NotificarePushLib shared] cancelDownloads:downloads];
 }
 
-void resumeDownloads(const char* downloadsJSON) {
+void _resumeDownloads(const char* downloadsJSON) {
     NSString *jsonString = stringWithChar(downloadsJSON);
-    NSArray *dictionaryDownloads = objectFromJSONString(jsonString);
+    NSDictionary *downloadsInfo = objectFromJSONString(jsonString);
     
-    // Have to loop through pending transactions and downloads to match
+    NSArray *downloads = filterDownloads(downloadsInfo[@"downloads"]);
     [[NotificarePushLib shared] resumeDownloads:downloads];
 }
 
-const char *contentPathForProduct(const char *productIdentifier) {
+const char *_contentPathForProduct(const char *productIdentifier) {
     NSString *productIdentifierString = productIdentifier ? [NSString stringWithUTF8String:productIdentifier] : nil;
     NSString *contentPathString = [[NotificarePushLib shared] contentPathForProduct:productIdentifierString];
     
+#warning Might need copying first
     return contentPathString.UTF8String;
 }
 
@@ -372,7 +395,8 @@ const char *sdkVersion() {
 #pragma mark - NotificarePushLibDelegate -
 
 - (BOOL)notificarePushLib:(NotificarePushLib *)library shouldHandleNotification:(NSDictionary *)info {
-    NSString *jsonString = [self performDelegateCallback:@"shouldHandleNotification" withObject:info];
+    NSDictionary *notificationInfo = @{@"notification": info};
+    NSString *jsonString = [self performDelegateCallback:@"shouldHandleNotification" withObject:notificationInfo];
     
     if (!jsonString) {
         return NO;
@@ -384,106 +408,107 @@ const char *sdkVersion() {
         return NO;
     }
     
-#warning Need to decide on a format for return value. [resultInfo[@"shouldHandleNotification"] boolValue]?
-    return NO;
+    return resultInfo[@"shouldHandleNotification"] ? [resultInfo[@"shouldHandleNotification"] boolValue] : NO;
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didUpdateBadge:(int)badge {
-#warning Have to verify if NSNumber a valid JSON object
-    [self performDelegateCallback:@"shouldHandleNotification" withObject:[NSNumber numberWithInt:badge]];
+    NSDictionary *badgeInfo = @{@"badge": [NSNumber numberWithInt:badge]};
+    [self performDelegateCallback:@"didUpdateBadge" withObject:badgeInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library willOpenNotification:(NotificareNotification *)notification {
-    NSDictionary *info = [notification toDictionary];
-    [self performDelegateCallback:@"willOpenNotification" withObject:info];
+    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    [self performDelegateCallback:@"willOpenNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didOpenNotification:(NotificareNotification *)notification {
-    NSDictionary *info = [notification toDictionary];
-    [self performDelegateCallback:@"didOpenNotification" withObject:info];
+    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    [self performDelegateCallback:@"didOpenNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didCloseNotification:(NotificareNotification *)notification {
-    NSDictionary *info = [notification toDictionary];
-    [self performDelegateCallback:@"didCloseNotification" withObject:info];
+    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    [self performDelegateCallback:@"didCloseNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailToOpenNotification:(NotificareNotification *)notification {
-    NSDictionary *info = [notification toDictionary];
-    [self performDelegateCallback:@"didFailToOpenNotification" withObject:info];
+    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    [self performDelegateCallback:@"didFailToOpenNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didLoadStore:(NSArray *)products {
-    NSMutableArray *dictionaryProducts = [NSMutableArray array];
+    NSMutableArray *productDicts = [NSMutableArray array];
     
     for (NotificareProduct *product in products) {
-        [dictionaryProducts addObject:[product toDictionary]];
+        [productDicts addObject:[product toDictionary]];
     }
     
-    [self performDelegateCallback:@"didLoadStore" withObject:dictionaryProducts];
+    NSDictionary *productsInfo = @{@"products": productDicts};
+    [self performDelegateCallback:@"didLoadStore" withObject:productsInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailToLoadStore:(NSError *)error {
-#warning have to verify if NSError is a valid JSON object
-    [self performDelegateCallback:@"didFailToLoadStore" withObject:error];
+    NSDictionary *errorInfo = @{@"error": error.description};
+    [self performDelegateCallback:@"didFailToLoadStore" withObject:errorInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didCompleteProductTransaction:(SKPaymentTransaction *)transaction {
-#warning have to verify if SKPaymentTransaction is a valid JSON object
-    [self performDelegateCallback:@"didCompleteProductTransaction" withObject:transaction];
+    NSDictionary *transactionInfo = @{@"transaction": [transaction toDictionary]};
+    [self performDelegateCallback:@"didCompleteProductTransaction" withObject:transactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didRestoreProductTransaction:(SKPaymentTransaction *)transaction {
-#warning have to verify if SKPaymentTransaction is a valid JSON object
-    [self performDelegateCallback:@"didRestoreProductTransaction" withObject:transaction];
+    NSDictionary *transactionInfo = @{@"transaction": [transaction toDictionary]};
+    [self performDelegateCallback:@"didRestoreProductTransaction" withObject:transactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailProductTransaction:(SKPaymentTransaction *)transaction withError:(NSError *)error {
-#warning have to verify if SKPaymentTransaction is a valid JSON object
-#warning delegate callbacks currently accept only one object
-    [self performDelegateCallback:@"didFailProductTransaction" withObject:transaction];
+    NSDictionary *failedTransactionInfo = @{@"transaction": [transaction toDictionary],
+                                            @"error": error.description};
+    [self performDelegateCallback:@"didFailProductTransaction" withObject:failedTransactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didStartDownloadContent:(SKPaymentTransaction *)transaction {
-#warning have to verify if SKPaymentTransaction is a valid JSON object
-    [self performDelegateCallback:@"didStartDownloadContent" withObject:transaction];
+    NSDictionary *transactionInfo = @{@"transaction": [transaction toDictionary]};
+    [self performDelegateCallback:@"didStartDownloadContent" withObject:transactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didPauseDownloadContent:(SKDownload *)download {
-#warning have to verify if SKDownload is a valid JSON object
-    [self performDelegateCallback:@"didPauseDownloadContent" withObject:download];
+    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    [self performDelegateCallback:@"didPauseDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didCancelDownloadContent:(SKDownload *)download {
-#warning have to verify if SKDownload is a valid JSON object
-    [self performDelegateCallback:@"didCancelDownloadContent" withObject:download];
+    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    [self performDelegateCallback:@"didCancelDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didReceiveProgressDownloadContent:(SKDownload *)download {
-#warning have to verify if SKDownload is a valid JSON object
-    [self performDelegateCallback:@"didReceiveProgressDownloadContent" withObject:download];
+    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    [self performDelegateCallback:@"didReceiveProgressDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailDownloadContent:(SKDownload *)download {
-#warning have to verify if SKDownload is a valid JSON object
-    [self performDelegateCallback:@"didFailDownloadContent" withObject:download];
+    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    [self performDelegateCallback:@"didFailDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFinishDownloadContent:(SKDownload *)download {
-#warning have to verify if SKDownload is a valid JSON object
-    [self performDelegateCallback:@" didFinishDownloadContent" withObject:download];
+    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    [self performDelegateCallback:@"didFinishDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library onReady:(NSDictionary *)info {
-    [self performDelegateCallback:@"onReady" withObject:info];
+    NSDictionary *applicationInfo = @{@"application": info};
+    [self performDelegateCallback:@"onReady" withObject:applicationInfo];
 }
 
 - (NSString *)performDelegateCallback:(NSString *)delegateMethod withObject:(id)object {
-    StringBlock stringBlock = self.delegateCallbacks[delegateMethod];
+    DelegateBlock delegateBlock = self.delegateCallbacks[delegateMethod];
     NSString *jsonString = jsonStringFromObject(object);
     
-    if (stringBlock) {
-        return stringBlock(jsonString);
+    if (delegateBlock) {
+        return delegateBlock(jsonString);
     }
     
     return nil;
