@@ -3,14 +3,33 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
 using Newtonsoft.Json;
 
 public struct SKDownload {
+	public string contentIdentfier;
+	public int contentLength;
+	public string contentVersion;
+	public string transactionIdentifier;
+	public string state;
+	public float progress;
+	public string error;
+	public string contentURL;
+}
 
+public struct SKPayment {
+	public string productIdentifier;
+	public int quantity;
+	public string applicationUsername;
 }
 
 public struct SKPaymentTransaction {
-
+	public string error;
+	public SKPayment payment;
+	public string transactionState;
+	public string transactionIdentifier;
+	public string transactionDate;
+	public List<SKDownload> downloads;
 }
 
 public struct Notification {
@@ -18,11 +37,57 @@ public struct Notification {
 }
 
 public struct NotificareApplication {
+	public string name;
+	public string category;
+	public string appStoreId;
+	public Dictionary<string, string> regionConfig;
+	public string androidPackageName;
+	public Dictionary<string, bool> services;
+	// public List<object> actionCategories; // Might implement this at a later time
+}
 
+public struct NotificareAction {
+	string actionType;
+	string actionLabel;
+	string actionTarget;
+	bool actionKeyboard;
+	bool actionCamera;
+}
+
+public struct NotificareAttachment {
+	string attachmentURI;
+	string attachmentMimeType;
+}
+
+public struct NotificareContent {
+	string type;
+	string data;
+	Dictionary<string, object> dataDictionary;
+}
+
+public struct NotificareSegment {
+	string segmentLabel;
+	string segmentId;
+	bool selected;
 }
 
 public struct NotificareNotification {
-
+	public string notificationID;
+	public NotificareApplication application;
+	public string notificationType;
+	public string notificationTime;
+	public string notificationMessage;
+	public string notificationLatitude;
+	public string notificationLongitude;
+	public string notificationDistance;
+	public List<NotificareContent> notificationContent;
+	public List<NotificareAction> notificationActions;
+	public List<NotificareAttachment> notificationAttachments;
+	public List<string> notificationTags;
+	public List<NotificareSegment> notificationSegments;
+	public Dictionary<string, object> notificationExtra;
+	public Dictionary<string, object> notificationInfo;
+	public int displayMessage;
 }
 
 public struct NotificareProduct {
@@ -33,7 +98,7 @@ public struct NotificareProduct {
 	public string application;
 	public string identifier;
 	// Stores variable?
-	//public List<SKDownload> downloads;
+	public List<SKDownload> downloads;
 	public string date;
 	public string priceLocale;
 	public string price;
@@ -42,26 +107,34 @@ public struct NotificareProduct {
 	public bool purchased;
 }
 
-public interface INotificarePushLibSubscriber {
-	bool ShouldHandleNotification(Notification notification);
-	void DidUpdateBadge(int badge);
-	void WillOpenNotification(NotificareNotification notification);
-	void DidOpenNotification(NotificareNotification notification);
-	void DidCloseNotification(NotificareNotification notification);
-	void DidFailToOpenNotification(NotificareNotification notification);
-	void DidLoadStore(List<NotificareProduct> products);
-	void DidFailToLoadStore(string error);
-	void DidCompleteProductTransaction(SKPaymentTransaction transaction);
-	void DidRestoreProductTransaction(SKPaymentTransaction transaction);
-	void DidFailProductTransaction(SKPaymentTransaction transaction, string error);
-	void DidStartDownloadContent(SKPaymentTransaction transaction);
-	void DidPauseDownloadContent(SKDownload download);
-	void DidCancelDownloadContent(SKDownload download);
-	void DidReceiveProgressDownloadContent(SKDownload download);
-	void DidFailDownloadContent(SKDownload download);
-	void DidFinishDownloadContent(SKDownload download);
-	void OnReady(NotificareApplication application);
+public class NotificareMonoBehaviour:MonoBehaviour {
+	public virtual bool ShouldHandleNotification(Notification notification) {return false;}
+	public virtual void DidUpdateBadge(int badge) {}
+	public virtual void WillOpenNotification(NotificareNotification notification) {}
+	public virtual void DidOpenNotification(NotificareNotification notification) {}
+	public virtual void DidCloseNotification(NotificareNotification notification) {}
+	public virtual void DidFailToOpenNotification(NotificareNotification notification) {}
+	public virtual void DidLoadStore(List<NotificareProduct> products) {}
+	public virtual void DidFailToLoadStore(string error) {}
+	public virtual void DidCompleteProductTransaction(SKPaymentTransaction transaction) {}
+	public virtual void DidRestoreProductTransaction(SKPaymentTransaction transaction) {}
+	public virtual void DidFailProductTransaction(SKPaymentTransaction transaction, string error) {}
+	public virtual void DidStartDownloadContent(SKPaymentTransaction transaction) {}
+	public virtual void DidPauseDownloadContent(SKDownload download) {}
+	public virtual void DidCancelDownloadContent(SKDownload download) {}
+	public virtual void DidReceiveProgressDownloadContent(SKDownload download) {}
+	public virtual void DidFailDownloadContent(SKDownload download) {}
+	public virtual void DidFinishDownloadContent(SKDownload download) {}
+	public virtual void OnReady(NotificareApplication application) {}
+
+	public NotificarePushLib notificarePushLib;
 }
+
+public delegate void MessageCallback(string message);
+public delegate void InfoCallback(Dictionary<string, object> info);
+public delegate void NotificationCallback(Notification notification);
+public delegate void ProductsCallback(List<NotificareProduct> products);
+public delegate void ProductCallback(NotificareProduct product);
 
 public class NotificarePushLib:Singleton<NotificarePushLib> {
 
@@ -70,13 +143,7 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 	private delegate string DelegateCallback(string json);
 	private Dictionary<string, DelegateCallback> delegateCallbacks;
 
-	public delegate void MessageCallback(string message);
-	public delegate void InfoCallback(Dictionary<string, object> info);
-	public delegate void NotificationCallback(Notification notification);
-	public delegate void ProductsCallback(List<NotificareProduct> products);
-	public delegate void ProductCallback(NotificareProduct product);
-
-	public List<INotificarePushLibSubscriber> subscribers;
+	public List<NotificareMonoBehaviour> subscribers;
 
 	protected NotificarePushLib() {}
 
@@ -171,8 +238,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 
 		bool shouldHandleNotification = false;
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			shouldHandleNotification |= subscriber.ShouldHandleNotification(notificationInfo.notification);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				shouldHandleNotification |= subscriber.ShouldHandleNotification(notificationInfo.notification);
+			}
 		}
 
 		var shouldHandleNotificationInfo = new {shouldHandleNotification = shouldHandleNotification};
@@ -185,8 +254,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {badge = 0};
 		var badgeInfo = JsonConvert.DeserializeAnonymousType(badgeJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidUpdateBadge(badgeInfo.badge);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidUpdateBadge(badgeInfo.badge);
+			}
 		}
 
 		return null;
@@ -196,8 +267,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {notification = new NotificareNotification()};
 		var notificationInfo = JsonConvert.DeserializeAnonymousType(notificationJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.WillOpenNotification(notificationInfo.notification);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.WillOpenNotification(notificationInfo.notification);
+			}
 		}
 
 		return null;
@@ -207,8 +280,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {notification = new NotificareNotification()};
 		var notificationInfo = JsonConvert.DeserializeAnonymousType(notificationJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidOpenNotification(notificationInfo.notification);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidOpenNotification(notificationInfo.notification);
+			}
 		}
 
 		return null;
@@ -218,8 +293,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {notification = new NotificareNotification()};
 		var notificationInfo = JsonConvert.DeserializeAnonymousType(notificationJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidCloseNotification(notificationInfo.notification);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidCloseNotification(notificationInfo.notification);
+			}
 		}
 
 		return null;
@@ -229,8 +306,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {notification = new NotificareNotification()};
 		var notificationInfo = JsonConvert.DeserializeAnonymousType(notificationJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidFailToOpenNotification(notificationInfo.notification);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailToOpenNotification(notificationInfo.notification);
+			}
 		}
 
 		return null;
@@ -240,8 +319,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {products = new List<NotificareProduct>()};
 		var productsInfo = JsonConvert.DeserializeAnonymousType(productsJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidLoadStore(productsInfo.products);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidLoadStore(productsInfo.products);
+			}
 		}
 
 		return null;
@@ -251,8 +332,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {error = ""};
 		var errorInfo = JsonConvert.DeserializeAnonymousType(errorJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidFailToLoadStore(errorInfo.error);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailToLoadStore(errorInfo.error);
+			}
 		}
 
 		return null;
@@ -262,7 +345,7 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {transaction = new SKPaymentTransaction()};
 		var transactionInfo = JsonConvert.DeserializeAnonymousType(transactionJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
 			subscriber.DidCompleteProductTransaction(transactionInfo.transaction);
 		}
 
@@ -273,8 +356,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {transaction = new SKPaymentTransaction()};
 		var transactionInfo = JsonConvert.DeserializeAnonymousType(transactionJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidRestoreProductTransaction(transactionInfo.transaction);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidRestoreProductTransaction(transactionInfo.transaction);
+			}
 		}
 		
 		return null;
@@ -284,8 +369,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {transaction = new SKPaymentTransaction(), error = ""};
 		var failedTransactionInfo = JsonConvert.DeserializeAnonymousType(failedTransactionJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidFailProductTransaction(failedTransactionInfo.transaction, failedTransactionInfo.error);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailProductTransaction(failedTransactionInfo.transaction, failedTransactionInfo.error);
+			}
 		}
 
 		return null;
@@ -295,8 +382,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {transaction = new SKPaymentTransaction()};
 		var transactionInfo = JsonConvert.DeserializeAnonymousType(transactionJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidStartDownloadContent(transactionInfo.transaction);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidStartDownloadContent(transactionInfo.transaction);
+			}
 		}
 
 		return null;
@@ -306,8 +395,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {download = new SKDownload()};
 		var downloadInfo = JsonConvert.DeserializeAnonymousType(downloadJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidPauseDownloadContent(downloadInfo.download);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidPauseDownloadContent(downloadInfo.download);
+			}
 		}
 
 		return null;
@@ -317,8 +408,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {download = new SKDownload()};
 		var downloadInfo = JsonConvert.DeserializeAnonymousType(downloadJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidCancelDownloadContent(downloadInfo.download);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidCancelDownloadContent(downloadInfo.download);
+			}
 		}
 
 		return null;
@@ -328,8 +421,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {download = new SKDownload()};
 		var downloadInfo = JsonConvert.DeserializeAnonymousType(downloadJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidReceiveProgressDownloadContent(downloadInfo.download);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidReceiveProgressDownloadContent(downloadInfo.download);
+			}
 		}
 
 		return null;
@@ -339,8 +434,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {download = new SKDownload()};
 		var downloadInfo = JsonConvert.DeserializeAnonymousType(downloadJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidFailDownloadContent(downloadInfo.download);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailDownloadContent(downloadInfo.download);
+			}
 		}
 
 		return null;
@@ -350,8 +447,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {download = new SKDownload()};
 		var downloadInfo = JsonConvert.DeserializeAnonymousType(downloadJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.DidFinishDownloadContent(downloadInfo.download);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFinishDownloadContent(downloadInfo.download);
+			}
 		}
 
 		return null;
@@ -361,8 +460,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		var definition = new {application = new NotificareApplication()};
 		var applicationInfo = JsonConvert.DeserializeAnonymousType(applicationJSON, definition);
 
-		foreach (INotificarePushLibSubscriber subscriber in subscribers) {
-			subscriber.OnReady(applicationInfo.application);
+		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+			if (subscriber != null) {
+				subscriber.OnReady(applicationInfo.application);
+			}
 		}
 
 		return null;
@@ -391,7 +492,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		_handleOptions(optionsJSON);
 	}
 
-	public void RegisterDevice(string token, InfoCallback registrationCallback, MessageCallback errorCallback) {
+	public void RegisterDevice(byte[] byteToken, InfoCallback registrationCallback, MessageCallback errorCallback) {
+#warning Not sure if this will create a proper char array to generate NSData from
+		string stringToken = Encoding.UTF8.GetString(byteToken);
+
 		BasicCallback infoBasicCallback = delegate(string json) {
 			var definition = new {registration = new Dictionary<string, object>()};
 			var registrationInfo = JsonConvert.DeserializeAnonymousType(json, definition);
@@ -406,10 +510,13 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 			errorCallback(errorInfo.error);
 		};
 
-		_registerDevice(token, infoBasicCallback, errorBasicCallback);
+		_registerDevice(stringToken, infoBasicCallback, errorBasicCallback);
 	}
 
-	public void RegisterDeviceWithUser(string token, string userID, string userName, InfoCallback registrationCallback, MessageCallback errorCallback) {
+	public void RegisterDeviceWithUser(byte[] byteToken, string userID, string userName, InfoCallback registrationCallback, MessageCallback errorCallback) {
+#warning Not sure if this will create a proper char array to generate NSData from
+		string stringToken = Encoding.UTF8.GetString(byteToken);
+
 		BasicCallback infoBasicCallback = delegate(string json) {
 			var definition = new {registration = new Dictionary<string, object>()};
 			var registrationInfo = JsonConvert.DeserializeAnonymousType(json, definition);
@@ -424,7 +531,7 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 			errorCallback(errorInfo.error);
 		};
 
-		_registerDevice(token, userID, userName, infoBasicCallback, errorBasicCallback);
+		_registerDevice(stringToken, userID, userName, infoBasicCallback, errorBasicCallback);
 	}
 
 	public void UnregisterDevice() {

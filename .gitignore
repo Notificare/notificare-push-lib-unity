@@ -1,32 +1,15 @@
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+.DS_Store
 
-# Precompiled Headers
-*.gch
-*.pch
+#XCode
+iOS/build/
+xcuserdata
+profile
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
-
-# Debug files
-*.dSYM/
+#Unity
+example/Temp/*
+*.meta
+example/Library/metadata/*
+example/Library/ScriptAssemblies/*
+*.csproj
+*.sln
+*.userprefs

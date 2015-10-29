@@ -8,6 +8,8 @@
 
 #import "NotificareProduct+Dictionary.h"
 
+#import "SKDownload+Dictionary.h"
+
 @implementation NotificareProduct (Dictionary)
 
 - (instancetype)initWithDictionary:(NSDictionary *)info {
@@ -20,7 +22,7 @@
         self.application        = info[@"application"];
         self.identifier         = info[@"identifier"];
         // stores?
-        // downloads?
+        // downloads, maybe restore them from paymentQueue?
         self.date               = info[@"date"];
         self.priceLocale        = info[@"priceLocale"];
         self.price              = info[@"price"];
@@ -39,7 +41,7 @@
                            @"application":         self.application,
                            @"identifier":          self.identifier,
                            // stores?
-                           // downloads?
+                           @"downloads":           [self getDictionaryDownloads],
                            @"date":                self.date,
                            @"priceLocale":         self.priceLocale,
                            @"price":               self.price,
@@ -48,6 +50,16 @@
                            @"purchased":           [NSNumber numberWithBool:self.purchased]};
     
     return info;
+}
+
+- (NSArray *)getDictionaryDownloads {
+    NSMutableArray *dictionaryDownloads = [NSMutableArray array];
+    
+    for (SKDownload *download in self.downloads) {
+        [dictionaryDownloads addObject:[download toDictionary]];
+    }
+    
+    return [dictionaryDownloads copy];
 }
 
 @end
