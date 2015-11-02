@@ -16,7 +16,7 @@ public class Main : NotificareMonoBehaviour {
 	
 	}
 
-	void Awake() {
+	public override void OnInit() {
 		if (notificarePushLib != null) {
 			notificarePushLib.Launch();
 		}
@@ -46,6 +46,10 @@ public class Main : NotificareMonoBehaviour {
 		InfoCallback registrationCallback = delegate(Dictionary<string, object> registration) {
 			Debug.Log("Device successfully registered with Notificare:");
 			Debug.Log(registration);
+
+			if (notificarePushLib.CheckLocationUpdates()) {
+				notificarePushLib.StartLocationUpdates();
+			}
 		};
 
 		MessageCallback errorCallback = delegate(string message) {

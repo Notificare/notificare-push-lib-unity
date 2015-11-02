@@ -8,8 +8,11 @@ profile
 #Unity
 example/Temp/*
 *.meta
+example/Library/*.db
+example/Library/*.log
 example/Library/metadata/*
 example/Library/ScriptAssemblies/*
+example/Library/ShaderCache/*
 *.csproj
 *.sln
 *.userprefs
