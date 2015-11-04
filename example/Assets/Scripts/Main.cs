@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using NotificationServices = UnityEngine.iOS.NotificationServices;
-using NotificationType = UnityEngine.iOS.NotificationType;
 
 public class Main : NotificareMonoBehaviour {
 
@@ -13,7 +11,7 @@ public class Main : NotificareMonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+
 	}
 
 	public override void OnInit() {
@@ -23,39 +21,23 @@ public class Main : NotificareMonoBehaviour {
 	}
 
 	public override void OnReady(NotificareApplication application) {
-		Debug.Log("NotificarePushLib for Unity is Ready:");
-		Debug.Log(application);
+		Debug.Log("OnReady");
+		Debug.Log(application.services);
 
-		// Is this a synchronous call?
-		NotificationServices.RegisterForNotifications(NotificationType.Alert | NotificationType.Badge | NotificationType.Sound);
+		notificarePushLib.RegisterForNotifications();
+	}
 
-		if (NotificationServices.registrationError != null) {
-			Debug.LogError(NotificationServices.registrationError);
+	public override void DidRegisterForRemoteNotificationsWithDeviceToken(byte[] deviceToken) {
+		Debug.Log("DidRegisterForRemoteNotificationsWithDeviceToken");
 
-			// Cannot continue
-			return;
-		}
+		notificarePushLib.RegisterDevice(deviceToken);
+	}
 
-		if (NotificationServices.deviceToken == null) {
-			Debug.LogError("Device Token is empty.");
+	public override void DidRegisterDevice(Dictionary<string, object> registration) {
+		Debug.Log("DidRegisterDevice");
+	}
 
-			// Cannot continue
-			return;
-		}
-
-		InfoCallback registrationCallback = delegate(Dictionary<string, object> registration) {
-			Debug.Log("Device successfully registered with Notificare:");
-			Debug.Log(registration);
-
-			if (notificarePushLib.CheckLocationUpdates()) {
-				notificarePushLib.StartLocationUpdates();
-			}
-		};
-
-		MessageCallback errorCallback = delegate(string message) {
-			Debug.LogError("Device failed to register with Notificare: " + message);
-		};
-
-		notificarePushLib.RegisterDevice(NotificationServices.deviceToken, registrationCallback, errorCallback);
+	public override void DidFailToRegisterDevice(string error) {
+		Debug.Log("DidFailToRegisterDevice: " + error);
 	}
 }

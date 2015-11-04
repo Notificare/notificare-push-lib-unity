@@ -1,20 +1,13 @@
 ﻿using UnityEngine;
+using NotificationServices = UnityEngine.iOS.NotificationServices;
+using NotificationType = UnityEngine.iOS.NotificationType;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using LitJson;
-
-public class MonoPInvokeCallbackAttribute : System.Attribute {
-	#pragma warning disable 414
-	private Type type;
-	#pragma warning restore 414
-
-	public MonoPInvokeCallbackAttribute( Type t ) {
-		type = t;
-	}
-}
+using AOT;
 
 public struct SKDownload {
 	public string contentIdentfier;
@@ -118,6 +111,8 @@ public struct NotificareProduct {
 }
 
 public class NotificareMonoBehaviour:MonoBehaviour {
+	public NotificarePushLib notificarePushLib;
+
 	public virtual void OnInit() {}
 
 	public virtual bool ShouldHandleNotification(Notification notification) {return false;}
@@ -139,11 +134,18 @@ public class NotificareMonoBehaviour:MonoBehaviour {
 	public virtual void DidFinishDownloadContent(SKDownload download) {}
 	public virtual void OnReady(NotificareApplication application) {}
 
-	public virtual void Test() {
-		Debug.Log("Test");
-	}
+	public virtual void DidRegisterForRemoteNotificationsWithDeviceToken(byte[] deviceToken) {}
 
-	public NotificarePushLib notificarePushLib;
+	public virtual void DidRegisterDevice(Dictionary<string, object> registration) {}
+	public virtual void DidFailToRegisterDevice(string error) {}
+	public virtual void DidGetNotification(Notification notification) {}
+	public virtual void DidFailToGetNotification(string error) {}
+	public virtual void DidFetchProducts(List<NotificareProduct> products) {}
+	public virtual void DidFailToFetchProducts(string error) {}
+	public virtual void DidFetchPurchasedProducts(List<NotificareProduct> products) {}
+	public virtual void DidFailToFetchPurchasedProducts(string error) {}
+	public virtual void DidFetchProduct(NotificareProduct product) {}
+	public virtual void DidFailToFetchProduct(string error) {}
 }
 
 public delegate void MessageCallback(string message);
@@ -208,8 +210,8 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 	private delegate string DelegateCallback(string json);
 	private Dictionary<string, DelegateCallback> delegateCallbacks;
 
-	public NotificareMonoBehaviour[] subscribers;
-	private static NotificareMonoBehaviour[] persistentSubscribers;
+	private static List<NotificareMonoBehaviour> Subscribers;
+	public List<NotificareMonoBehaviour> subscribers;
 	
 
 	// For Singleton Implementation
@@ -232,10 +234,10 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 	private static extern void _handleOptions(string optionsJSON);
 	 
 	[DllImport ("__Internal")]
-	private static extern void _registerDevice(string token, BasicCallback registrationBasicCallback, BasicCallback errorBasicCallback);
+	private static extern void _registerDevice(byte[] token, uint tokenLength, BasicCallback registrationBasicCallback, BasicCallback errorBasicCallback);
 	
 	[DllImport ("__Internal")]
-	private static extern void _registerDevice(string token, string userID, string username, BasicCallback registrationBasicCallback, BasicCallback errorBasicCallback);
+	private static extern void _registerDevice(byte[] token, uint tokenLength, string userID, string username, BasicCallback registrationBasicCallback, BasicCallback errorBasicCallback);
 
 	[DllImport ("__Internal")]
 	private static extern void _unregisterDevice();
@@ -300,13 +302,13 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 	[DllImport ("__Internal")]
 	private static extern void _unregisterDelegateCallback(string delegateMethod);
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string ShouldHandleNotification(string notificationJSON) {
 		NotificationInfo notificationInfo = JsonMapper.ToObject<NotificationInfo>(notificationJSON);
 
 		bool shouldHandleNotification = false;
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				shouldHandleNotification |= subscriber.ShouldHandleNotification(notificationInfo.notification);
 			}
@@ -318,11 +320,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return shouldHandleNotificationJSON;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidUpdateBadge(string badgeJSON) {
 		BadgeInfo badgeInfo = JsonMapper.ToObject<BadgeInfo>(badgeJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidUpdateBadge(badgeInfo.badge);
 			}
@@ -331,11 +333,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string WillOpenNotification(string notificationJSON) {
 		NotificareNotificationInfo notificationInfo = JsonMapper.ToObject<NotificareNotificationInfo>(notificationJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.WillOpenNotification(notificationInfo.notification);
 			}
@@ -344,11 +346,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidOpenNotification(string notificationJSON) {
 		NotificareNotificationInfo notificationInfo = JsonMapper.ToObject<NotificareNotificationInfo>(notificationJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidOpenNotification(notificationInfo.notification);
 			}
@@ -357,11 +359,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidCloseNotification(string notificationJSON) {
 		NotificareNotificationInfo notificationInfo = JsonMapper.ToObject<NotificareNotificationInfo>(notificationJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidCloseNotification(notificationInfo.notification);
 			}
@@ -370,11 +372,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidFailToOpenNotification(string notificationJSON) {
 		NotificareNotificationInfo notificationInfo = JsonMapper.ToObject<NotificareNotificationInfo>(notificationJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidFailToOpenNotification(notificationInfo.notification);
 			}
@@ -383,11 +385,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidLoadStore(string productsJSON) {
 		ProductsInfo productsInfo = JsonMapper.ToObject<ProductsInfo>(productsJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidLoadStore(productsInfo.products);
 			}
@@ -396,11 +398,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidFailToLoadStore(string errorJSON) {
 		ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(errorJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidFailToLoadStore(errorInfo.error);
 			}
@@ -409,18 +411,18 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidCompleteProductTransaction(string transactionJSON) {
 		TransactionInfo transactionInfo = JsonMapper.ToObject<TransactionInfo>(transactionJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			subscriber.DidCompleteProductTransaction(transactionInfo.transaction);
 		}
 
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidRestoreProductTransaction(string transactionJSON) {
 		TransactionInfo transactionInfo = JsonMapper.ToObject<TransactionInfo>(transactionJSON);
 
@@ -433,11 +435,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidFailProductTransaction(string failedTransactionJSON) {
 		FailedTransactionInfo failedTransactionInfo = JsonMapper.ToObject<FailedTransactionInfo>(failedTransactionJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidFailProductTransaction(failedTransactionInfo.transaction, failedTransactionInfo.error);
 			}
@@ -446,11 +448,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidStartDownloadContent(string transactionJSON) {
 		TransactionInfo transactionInfo = JsonMapper.ToObject<TransactionInfo>(transactionJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidStartDownloadContent(transactionInfo.transaction);
 			}
@@ -459,11 +461,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidPauseDownloadContent(string downloadJSON) {
 		DownloadInfo downloadInfo = JsonMapper.ToObject<DownloadInfo>(downloadJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidPauseDownloadContent(downloadInfo.download);
 			}
@@ -472,11 +474,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidCancelDownloadContent(string downloadJSON) {
 		DownloadInfo downloadInfo = JsonMapper.ToObject<DownloadInfo>(downloadJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidCancelDownloadContent(downloadInfo.download);
 			}
@@ -485,11 +487,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidReceiveProgressDownloadContent(string downloadJSON) {
 		DownloadInfo downloadInfo = JsonMapper.ToObject<DownloadInfo>(downloadJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidReceiveProgressDownloadContent(downloadInfo.download);
 			}
@@ -498,11 +500,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidFailDownloadContent(string downloadJSON) {
 		DownloadInfo downloadInfo = JsonMapper.ToObject<DownloadInfo>(downloadJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidFailDownloadContent(downloadInfo.download);
 			}
@@ -511,11 +513,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string DidFinishDownloadContent(string downloadJSON) {
 		DownloadInfo downloadInfo = JsonMapper.ToObject<DownloadInfo>(downloadJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.DidFinishDownloadContent(downloadInfo.download);
 			}
@@ -524,11 +526,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	[MonoPInvokeCallback (typeof (DelegateCallback))]
+	[MonoPInvokeCallback(typeof(DelegateCallback))]
 	string OnReady(string applicationJSON) {
 		NotificareApplicationInfo applicationInfo = JsonMapper.ToObject<NotificareApplicationInfo>(applicationJSON);
 
-		foreach (NotificareMonoBehaviour subscriber in persistentSubscribers) {
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
 				subscriber.OnReady(applicationInfo.application);
 			}
@@ -537,26 +539,156 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return null;
 	}
 
-	string Test(NotificareApplicationInfo applicationInfo) {
-		foreach (NotificareMonoBehaviour subscriber in subscribers) {
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidRegisterDevice(string registrationJSON) {
+		RegistrationInfo registrationInfo = JsonMapper.ToObject<RegistrationInfo>(registrationJSON);
+
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
 			if (subscriber != null) {
-				subscriber.OnReady(applicationInfo.application);
+				subscriber.DidRegisterDevice(registrationInfo.registration);
 			}
 		}
+	}
 
-		return null;
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFailToRegisterDevice(string errorJSON) {
+		ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(errorJSON);
+
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailToRegisterDevice(errorInfo.error);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidGetNotification(string notificationJSON) {
+		NotificationInfo notificationInfo = JsonMapper.ToObject<NotificationInfo>(notificationJSON);
+
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidGetNotification(notificationInfo.notification);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFailToGetNotification(string errorJSON) {
+		ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(errorJSON);
+		
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailToGetNotification(errorInfo.error);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFetchProducts(string productsJSON) {
+		ProductsInfo productsInfo = JsonMapper.ToObject<ProductsInfo>(productsJSON);
+
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFetchProducts(productsInfo.products);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFailToFetchProducts(string errorJSON) {
+		ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(errorJSON);
+		
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailToFetchProducts(errorInfo.error);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFetchPurchasedProducts(string productsJSON) {
+		ProductsInfo productsInfo = JsonMapper.ToObject<ProductsInfo>(productsJSON);
+
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFetchPurchasedProducts(productsInfo.products);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFailToFetchPurchasedProducts(string errorJSON) {
+		ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(errorJSON);
+		
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailToFetchPurchasedProducts(errorInfo.error);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFetchProduct(string productJSON) {
+		ProductInfo productInfo = JsonMapper.ToObject<ProductInfo>(productJSON);
+
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFetchProduct(productInfo.product);
+			}
+		}
+	}
+
+	[MonoPInvokeCallback(typeof(BasicCallback))]
+	void DidFailToFetchProduct(string errorJSON) {
+		ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(errorJSON);
+		
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			if (subscriber != null) {
+				subscriber.DidFailToFetchProduct(errorInfo.error);
+			}
+		}
 	}
 
 	public void Launch() {
 		_launch();
 	}
 
+	private IEnumerator WaitForDeviceToken() {
+		// Maybe resort to exponential fallback?
+		while (NotificationServices.deviceToken == null && NotificationServices.registrationError == null) {
+			yield return new WaitForSeconds(0.001f);
+		}
+
+		if (NotificationServices.registrationError != null) {
+			Debug.LogError(NotificationServices.registrationError);
+			
+			// Cannot continue
+			yield break;
+		}
+		
+		foreach (NotificareMonoBehaviour subscriber in Subscribers) {
+			subscriber.DidRegisterForRemoteNotificationsWithDeviceToken(NotificationServices.deviceToken);
+
+			yield return null;
+		}
+	}
+
 	public void RegisterForNotifications() {
+		// Currently using Notificare's registration method
+		// If not working, use: "NotificationServices.RegisterForNotifications(NotificationType.Alert | NotificationType.Badge | NotificationType.Sound);"
+
 		_registerForNotifications();
+
+		StartCoroutine(WaitForDeviceToken());
 	}
 
 	public void RegisterUserNotifications() {
+		// Currently using Notificare's registration method
+		// If not working, use: "NotificationServices.RegisterForNotifications(NotificationType.Alert | NotificationType.Badge | NotificationType.Sound);"
+
 		_registerUserNotifications();
+
+		StartCoroutine(WaitForDeviceToken());
 	}
 
 	public bool CheckRemoteNotifications() {
@@ -570,42 +702,18 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		_handleOptions(optionsJSON);
 	}
 
-	public void RegisterDevice(byte[] byteToken, InfoCallback registrationCallback, MessageCallback errorCallback) {
-#warning Not sure if this will create a proper char array to generate NSData from
-		string stringToken = Encoding.UTF8.GetString(byteToken);
+	public void RegisterDevice(byte[] token) {
+		BasicCallback registrationCallback = new BasicCallback(DidRegisterDevice);
+		BasicCallback errorCallback = new BasicCallback(DidFailToRegisterDevice);
 
-		BasicCallback infoBasicCallback = delegate(string json) {
-			RegistrationInfo registrationInfo = JsonMapper.ToObject<RegistrationInfo>(json);
-
-			registrationCallback(registrationInfo.registration);
-		};
-
-		BasicCallback errorBasicCallback = delegate(string json) {
-			ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(json);
-
-			errorCallback(errorInfo.error);
-		};
-
-		_registerDevice(stringToken, infoBasicCallback, errorBasicCallback);
+		_registerDevice(token, (uint)token.Length, registrationCallback, errorCallback);
 	}
 
-	public void RegisterDeviceWithUser(byte[] byteToken, string userID, string userName, InfoCallback registrationCallback, MessageCallback errorCallback) {
-#warning Not sure if this will create a proper char array to generate NSData from
-		string stringToken = Encoding.UTF8.GetString(byteToken);
+	public void RegisterDeviceWithUser(byte[] token, string userID, string userName) {
+		BasicCallback registrationCallback = new BasicCallback(DidRegisterDevice);
+		BasicCallback errorCallback = new BasicCallback(DidFailToRegisterDevice);
 
-		BasicCallback infoBasicCallback = delegate(string json) {
-			RegistrationInfo registrationInfo = JsonMapper.ToObject<RegistrationInfo>(json);
-			
-			registrationCallback(registrationInfo.registration);
-		};
-		
-		BasicCallback errorBasicCallback = delegate(string json) {
-			ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(json);
-			
-			errorCallback(errorInfo.error);
-		};
-
-		_registerDevice(stringToken, userID, userName, infoBasicCallback, errorBasicCallback);
+		_registerDevice(token, (uint)token.Length, userID, userName, registrationCallback, errorCallback);
 	}
 
 	public void UnregisterDevice() {
@@ -631,20 +739,11 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		_logOpenNotification(notificationJSON);
 	}
 
-	public void GetNotification(string notificationID, NotificationCallback notificationCallback, MessageCallback errorCallback) {
-		BasicCallback notificationBasicCallback = delegate(string json) {
-			NotificationInfo notificationInfo = JsonMapper.ToObject<NotificationInfo>(json);
+	public void GetNotification(string notificationID) {
+		BasicCallback notificationCallback = new BasicCallback(DidGetNotification);
+		BasicCallback errorCallback = new BasicCallback(DidFailToGetNotification);
 
-			notificationCallback(notificationInfo.notification);
-		};
-
-		BasicCallback errorBasicCallback = delegate(string json) {
-			ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(json);
-
-			errorCallback(errorInfo.error);
-		};
-
-		_getNotification(notificationID, notificationBasicCallback, errorBasicCallback);
+		_getNotification(notificationID, notificationCallback, errorCallback);
 	}
 
 	public void ClearNotification(string notificationID) {
@@ -671,52 +770,25 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		return _myBadge();
 	}
 
-	public void FetchProducts(ProductsCallback productsCallback, MessageCallback errorCallback) {
-		BasicCallback productsBasicCallback = delegate(string json) {
-			ProductsInfo productsInfo = JsonMapper.ToObject<ProductsInfo>(json);
+	public void FetchProducts() {
+		BasicCallback productsCallback = new BasicCallback(DidFetchProducts);
+		BasicCallback errorCallback = new BasicCallback(DidFailToFetchProducts);
 
-			productsCallback(productsInfo.products);
-		};
-
-		BasicCallback errorBasicCallback = delegate(string json) {
-			ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(json);
-
-			errorCallback(errorInfo.error);
-		};
-
-		_fetchProducts(productsBasicCallback, errorBasicCallback);
+		_fetchProducts(productsCallback, errorCallback);
 	}
 
-	public void FetchPurchasedProducts(ProductsCallback productsCallback, MessageCallback errorCallback) {
-		BasicCallback productsBasicCallback = delegate(string json) {
-			ProductsInfo productsInfo = JsonMapper.ToObject<ProductsInfo>(json);
-			
-			productsCallback(productsInfo.products);
-		};
+	public void FetchPurchasedProducts() {
+		BasicCallback productsCallback = new BasicCallback(DidFetchPurchasedProducts);
+		BasicCallback errorCallback = new BasicCallback(DidFailToFetchPurchasedProducts);
 		
-		BasicCallback errorBasicCallback = delegate(string json) {
-			ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(json);
-			
-			errorCallback(errorInfo.error);
-		};
-		
-		_fetchPurchasedProducts(productsBasicCallback, errorBasicCallback);
+		_fetchPurchasedProducts(productsCallback, errorCallback);
 	}
 
-	public void FetchProduct(string productIdentifier, ProductCallback productCallback, MessageCallback errorCallback) {
-		BasicCallback productBasicCallback = delegate(string json) {
-			ProductInfo productInfo = JsonMapper.ToObject<ProductInfo>(json);
+	public void FetchProduct(string productIdentifier) {
+		BasicCallback productCallback = new BasicCallback(DidFetchProduct);
+		BasicCallback errorCallback = new BasicCallback(DidFailToFetchProduct);
 
-			productCallback(productInfo.product);
-		};
-
-		BasicCallback errorBasicCallback = delegate(string json) {
-			ErrorInfo errorInfo = JsonMapper.ToObject<ErrorInfo>(json);
-
-			errorCallback(errorInfo.error);
-		};
-
-		_fetchProduct(productIdentifier, productBasicCallback, errorBasicCallback);
+		_fetchProduct(productIdentifier, productCallback, errorCallback);
 	}
 
 	public void BuyProduct(NotificareProduct product) {
@@ -810,8 +882,6 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 	}
 
 	void Awake() {
-		persistentSubscribers = subscribers;
-
 		delegateCallbacks = new Dictionary<string, DelegateCallback>();
 
 		RegisterDelegateCallbacks();
@@ -821,8 +891,19 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 		}
 	}
 
+	void Start() {
+		Subscribers = subscribers;
+	}
+
+	void Stop() {
+		Subscribers = null;
+	}
+
 	void OnApplicationQuit() {
 		UnregisterDelegateCallbacks();
+
+		subscribers = null;
+		Subscribers = null;
 	}
 }
 

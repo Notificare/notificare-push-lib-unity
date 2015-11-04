@@ -16,6 +16,10 @@
 #import "SKPaymentTransaction+Dictionary.h"
 #import "SKDownload+Dictionary.h"
 
+typedef void (*BasicCallback)(const char *jsonUTF8String);
+typedef char *(*DelegateCallback)(const char *jsonUTF8String);
+typedef NSString *(^DelegateBlock)(NSString *jsonString);
+
 #pragma mark - C -
 
 #pragma mark - Unity
@@ -36,16 +40,16 @@ NSString *stringWithChar(const char *utf8String) {
     return utf8String ? [NSString stringWithUTF8String:utf8String] : nil;
 }
 
-char *cStringCopy(const char* cString) {
-    if (cString == NULL) {
-        return NULL;
-    }
-    
-    char* buffer = (char *)malloc(strlen(cString) + 1);
-    strcpy(buffer, cString);
-    
-    return buffer;
-}
+/*char *cStringCopy(const char* cString) {
+ if (cString == NULL) {
+ return NULL;
+ }
+ 
+ char* buffer = (char *)malloc(strlen(cString) + 1);
+ strcpy(buffer, cString);
+ 
+ return buffer;
+ }*/
 
 NSString *jsonStringFromObject(id object) {
     if (![NSJSONSerialization isValidJSONObject:object]) {
@@ -89,11 +93,11 @@ void performBasicCallback(BasicCallback callback, id object) {
     NSString *jsonString = jsonStringFromObject(object);
     
     if (callback) {
-        char *strCopy = cStringCopy([jsonString UTF8String]);
+        // char *strCopy = cStringCopy([jsonString UTF8String]);
         
-        callback(strCopy);
+        callback([jsonString UTF8String]);
         
-        free(strCopy);
+        //free(strCopy);
     }
 }
 
@@ -122,17 +126,16 @@ void _registerDelegateCallback(const char* delegateMethod, DelegateCallback call
     
     if (key && callback) {
         DelegateBlock delegateBlock = ^NSString *(NSString *str) {
-            char *strCopy = cStringCopy([str UTF8String]);
+            //char *strCopy = cStringCopy([str UTF8String]);
             
-            char *result = callback(strCopy);
+            char *result = callback([str UTF8String]);
             
-            free(strCopy);
+            //free(strCopy);
             
             return stringWithChar(result);
         };
         
-        // I think I have to make a copy here because the callback pointer is going to be freed by managed code
-        delegateCallbacks[key] = [delegateBlock copy];
+        delegateCallbacks[key] = delegateBlock;
     }
 }
 
@@ -168,34 +171,64 @@ void _handleOptions(const char *optionsJSON) {
     [[NotificarePushLib shared] handleOptions:optionsInfo[@"options"]];
 }
 
-void _registerDevice(const char *token, BasicCallback infoCallback, BasicCallback errorCallback) {
-    NSData *tokenData = [NSData dataWithBytes:token length:strlen(token)];
+void _registerDevice(const void *token, uint tokenLength, BasicCallback infoCallback, BasicCallback errorCallback) {
+    NSData *tokenData = [NSData dataWithBytes:token length:tokenLength];
     
     [[NotificarePushLib shared] registerDevice:tokenData completionHandler:^(NSDictionary *info) {
-        NSDictionary *registrationInfo = @{@"registration": info};
+        NSDictionary *registrationInfo;
+        
+        if (info) {
+            registrationInfo = @{@"registration": info};
+        }
+        else {
+            registrationInfo = @{@"registration": [NSNull null]};
+        }
+        
         performBasicCallback(infoCallback, registrationInfo);
     } errorHandler:^(NSError *error) {
-        NSDictionary *errorInfo = @{@"error": error.description};
+        NSDictionary *errorInfo;
+        
+        if (error) {
+            errorInfo = @{@"error": error.description};
+        }
+        else {
+            errorInfo = @{@"error": [NSNull null]};
+        }
+        
         performBasicCallback(errorCallback, errorInfo);
     }];
 }
 
-void _registerDeviceWithUser(const char *token, const char *userID, const char *username, BasicCallback infoCallback, BasicCallback errorCallback) {
-    NSData *tokenData = [NSData dataWithBytes:token length:strlen(token)];
+void _registerDeviceWithUser(const void *token, uint tokenLength, const char *userID, const char *username, BasicCallback infoCallback, BasicCallback errorCallback) {
+    NSData *tokenData = [NSData dataWithBytes:token length:tokenLength];
     NSString *userIDString = userID ? [NSString stringWithUTF8String:userID] : nil;
     NSString *usernameString = username ? [NSString stringWithUTF8String:username] : nil;
-    
-#warning Might need to wrap callbacks in codeblocks (copies) because pointers to callbacks might be freed prematurely
     
     [[NotificarePushLib shared] registerDevice:tokenData
                                     withUserID:userIDString
                                   withUsername:usernameString
                              completionHandler:^(NSDictionary *info) {
-                                 NSDictionary *registrationInfo = @{@"registration": info};
+                                 NSDictionary *registrationInfo;
+                                 
+                                 if (info) {
+                                     registrationInfo = @{@"registration": info};
+                                 }
+                                 else {
+                                     registrationInfo = @{@"registration": [NSNull null]};
+                                 }
+                                 
                                  performBasicCallback(infoCallback, registrationInfo);
                              }
                                   errorHandler:^(NSError *error) {
-                                      NSDictionary *errorInfo = @{@"error": error.description};
+                                      NSDictionary *errorInfo;
+                                      
+                                      if (error) {
+                                          errorInfo = @{@"error": error.description};
+                                      }
+                                      else {
+                                          errorInfo = @{@"error": [NSNull null]};
+                                      }
+                                      
                                       performBasicCallback(errorCallback, errorInfo);
                                   }];
 }
@@ -227,11 +260,27 @@ void _getNotification(const char *notificationID, BasicCallback infoCallback, Ba
     
     [[NotificarePushLib shared] getNotification:notificationIDString
                               completionHandler:^(NSDictionary *info) {
-                                  NSDictionary *notificationInfo = @{@"notification": info};
+                                  NSDictionary *notificationInfo;
+                                  
+                                  if (info) {
+                                      notificationInfo = @{@"notification": info};
+                                  }
+                                  else {
+                                      notificationInfo = @{@"notification": [NSNull null]};
+                                  }
+                                  
                                   performBasicCallback(infoCallback, notificationInfo);
                               }
                                    errorHandler:^(NSError *error) {
-                                       NSDictionary *errorInfo = @{@"error": error.description};
+                                       NSDictionary *errorInfo;
+                                       
+                                       if (error) {
+                                           errorInfo = @{@"error": error.description};
+                                       }
+                                       else {
+                                           errorInfo = @{@"error": [NSNull null]};
+                                       }
+                                       
                                        performBasicCallback(errorCallback, errorInfo);
                                    }];
 }
@@ -264,27 +313,62 @@ int _myBadge() {
 
 void _fetchProducts(BasicCallback productsCallback, BasicCallback errorCallback) {
     [[NotificarePushLib shared] fetchProducts:^(NSArray *products) {
-        NSMutableArray *dictionaryProducts = [NSMutableArray array];
-        for (NotificareProduct *product in products) {
-            [dictionaryProducts addObject:[product toDictionary]];
+        NSDictionary *productsInfo;
+        
+        if (products) {
+            NSMutableArray *dictionaryProducts = [NSMutableArray array];
+            for (NotificareProduct *product in products) {
+                [dictionaryProducts addObject:[product toDictionary]];
+            }
+            
+            productsInfo = @{@"products": [dictionaryProducts copy]};
         }
-        NSDictionary *productsInfo = @{@"products": dictionaryProducts};
+        else {
+            productsInfo = @{@"products": [NSNull null]};
+        }
+        
         performBasicCallback(productsCallback, productsInfo);
     } errorHandler:^(NSError *error) {
-        NSDictionary *errorInfo = @{@"error": error.description};
+        NSDictionary *errorInfo;
+        
+        if (error) {
+            errorInfo = @{@"error": error.description};
+        }
+        else {
+            errorInfo = @{@"error": [NSNull null]};
+        }
+        
         performBasicCallback(errorCallback, errorInfo);
     }];
 }
 
 void _fetchPurchasedProducts(BasicCallback productsCallback, BasicCallback errorCallback) {
     [[NotificarePushLib shared] fetchPurchasedProducts:^(NSArray *products) {
-        NSMutableArray *dictionaryProducts = [NSMutableArray array];
-        for (NotificareProduct *product in products) {
-            [dictionaryProducts addObject:[product toDictionary]];
+        NSDictionary *productsInfo;
+        
+        if (products) {
+            NSMutableArray *dictionaryProducts = [NSMutableArray array];
+            for (NotificareProduct *product in products) {
+                [dictionaryProducts addObject:[product toDictionary]];
+            }
+            
+            productsInfo = @{@"products": [dictionaryProducts copy]};
         }
-        performBasicCallback(productsCallback, dictionaryProducts);
+        else {
+            productsInfo = @{@"products": [NSNull null]};
+        }
+        
+        performBasicCallback(productsCallback, productsInfo);
     } errorHandler:^(NSError *error) {
-        NSDictionary *errorInfo = @{@"error": error.description};
+        NSDictionary *errorInfo;
+        
+        if (error) {
+            errorInfo = @{@"error": error.description};
+        }
+        else {
+            errorInfo = @{@"error": [NSNull null]};
+        }
+        
         performBasicCallback(errorCallback, errorInfo);
     }];
 }
@@ -294,11 +378,27 @@ void _fetchProduct(const char *productIdentifier, BasicCallback productCallback,
     
     [[NotificarePushLib shared] fetchProduct:productIdentifierString
                            completionHandler:^(NotificareProduct *product) {
-                               NSDictionary *productInfo = @{@"product": [product toDictionary]};
+                               NSDictionary *productInfo;
+                               
+                               if (product) {
+                                   productInfo = @{@"product": [product toDictionary]};
+                               }
+                               else {
+                                   productInfo = @{@"product": [NSNull null]};
+                               }
+                               
                                performBasicCallback(productCallback, productInfo);
                            }
                                 errorHandler:^(NSError *error) {
-                                    NSDictionary *errorInfo = @{@"error": error.description};
+                                    NSDictionary *errorInfo;
+                                    
+                                    if (error) {
+                                        errorInfo = @{@"error": error.description};
+                                    }
+                                    else {
+                                        errorInfo = @{@"error": [NSNull null]};
+                                    }
+                                    
                                     performBasicCallback(errorCallback, errorInfo);
                                 }];
 }
@@ -339,7 +439,6 @@ const char *_contentPathForProduct(const char *productIdentifier) {
     NSString *productIdentifierString = productIdentifier ? [NSString stringWithUTF8String:productIdentifier] : nil;
     NSString *contentPathString = [[NotificarePushLib shared] contentPathForProduct:productIdentifierString];
     
-#warning Might need copying first
     return contentPathString.UTF8String;
 }
 
@@ -352,7 +451,6 @@ const char *sdkVersion() {
 @interface NotificarePushLibUnity () <NotificarePushLibDelegate>
 
 @property (nonatomic, strong) NotificarePushLib *notificarePushLib;
-@property (nonatomic, assign) char *unityDelegate;
 
 @end
 
@@ -395,7 +493,15 @@ const char *sdkVersion() {
 #pragma mark - NotificarePushLibDelegate -
 
 - (BOOL)notificarePushLib:(NotificarePushLib *)library shouldHandleNotification:(NSDictionary *)info {
-    NSDictionary *notificationInfo = @{@"notification": info};
+    NSDictionary *notificationInfo;
+    
+    if (info) {
+        notificationInfo = @{@"notification": info};
+    }
+    else {
+        notificationInfo = @{@"notification": [NSNull null]};
+    }
+    
     NSString *jsonString = [self performDelegateCallback:@"shouldHandleNotification" withObject:notificationInfo];
     
     if (!jsonString) {
@@ -404,7 +510,7 @@ const char *sdkVersion() {
     
     NSDictionary *resultInfo = objectFromJSONString(jsonString);
     
-    if (!info) {
+    if (!resultInfo) {
         return NO;
     }
     
@@ -417,89 +523,217 @@ const char *sdkVersion() {
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library willOpenNotification:(NotificareNotification *)notification {
-    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    NSDictionary *notificationInfo;
+    
+    if (notification) {
+        notificationInfo = @{@"notification": [notification toDictionary]};
+    }
+    else {
+        notificationInfo = @{@"notification": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"willOpenNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didOpenNotification:(NotificareNotification *)notification {
-    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    NSDictionary *notificationInfo;
+    
+    if (notification) {
+        notificationInfo = @{@"notification": [notification toDictionary]};
+    }
+    else {
+        notificationInfo = @{@"notification": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didOpenNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didCloseNotification:(NotificareNotification *)notification {
-    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    NSDictionary *notificationInfo;
+    
+    if (notification) {
+        notificationInfo = @{@"notification": [notification toDictionary]};
+    }
+    else {
+        notificationInfo = @{@"notification": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didCloseNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailToOpenNotification:(NotificareNotification *)notification {
-    NSDictionary *notificationInfo = @{@"notification": [notification toDictionary]};
+    NSDictionary *notificationInfo;
+    
+    if (notification) {
+        notificationInfo = @{@"notification": [notification toDictionary]};
+    }
+    else {
+        notificationInfo = @{@"notification": [NSNull null]};
+    }
     [self performDelegateCallback:@"didFailToOpenNotification" withObject:notificationInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didLoadStore:(NSArray *)products {
-    NSMutableArray *productDicts = [NSMutableArray array];
+    NSDictionary *productsInfo;
     
-    for (NotificareProduct *product in products) {
-        [productDicts addObject:[product toDictionary]];
+    if (products) {
+        NSMutableArray *productDicts = [NSMutableArray array];
+        
+        for (NotificareProduct *product in products) {
+            [productDicts addObject:[product toDictionary]];
+        }
+        
+        productsInfo = @{@"products": [productDicts copy]};
+    }
+    else {
+        productsInfo = @{@"products": [NSNull null]};
     }
     
-    NSDictionary *productsInfo = @{@"products": productDicts};
     [self performDelegateCallback:@"didLoadStore" withObject:productsInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailToLoadStore:(NSError *)error {
-    NSDictionary *errorInfo = @{@"error": error.description};
+    NSDictionary *errorInfo;
+    
+    if (error) {
+        errorInfo = @{@"error": error.description};
+    }
+    else {
+        errorInfo = @{@"error": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didFailToLoadStore" withObject:errorInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didCompleteProductTransaction:(SKPaymentTransaction *)transaction {
-    NSDictionary *transactionInfo = @{@"transaction": [transaction toDictionary]};
+    NSDictionary *transactionInfo;
+    
+    if (transaction) {
+        transactionInfo = @{@"transaction": [transaction toDictionary]};
+    }
+    else {
+        transactionInfo = @{@"transaction": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didCompleteProductTransaction" withObject:transactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didRestoreProductTransaction:(SKPaymentTransaction *)transaction {
-    NSDictionary *transactionInfo = @{@"transaction": [transaction toDictionary]};
+    NSDictionary *transactionInfo;
+    
+    if (transaction) {
+        transactionInfo = @{@"transaction": [transaction toDictionary]};
+    }
+    else {
+        transactionInfo = @{@"transaction": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didRestoreProductTransaction" withObject:transactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailProductTransaction:(SKPaymentTransaction *)transaction withError:(NSError *)error {
-    NSDictionary *failedTransactionInfo = @{@"transaction": [transaction toDictionary],
-                                            @"error": error.description};
+    NSDictionary *failedTransactionInfo = @{@"transaction": [NSNull null],
+                                            @"error": [NSNull null]};
+    
+    if (transaction) {
+        [failedTransactionInfo setValue:[transaction toDictionary] forKey:@"transaction"];
+    }
+    
+    if (error) {
+        [failedTransactionInfo setValue:error.description forKey:@"error"];
+    }
+    
     [self performDelegateCallback:@"didFailProductTransaction" withObject:failedTransactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didStartDownloadContent:(SKPaymentTransaction *)transaction {
-    NSDictionary *transactionInfo = @{@"transaction": [transaction toDictionary]};
+    NSDictionary *transactionInfo;
+    
+    if (transaction) {
+        transactionInfo = @{@"transaction": [transaction toDictionary]};
+    }
+    else {
+        transactionInfo = @{@"transaction": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didStartDownloadContent" withObject:transactionInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didPauseDownloadContent:(SKDownload *)download {
-    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    NSDictionary *downloadInfo;
+    
+    if (download) {
+        downloadInfo = @{@"download": [download toDictionary]};
+    }
+    else {
+        downloadInfo = @{@"download": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didPauseDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didCancelDownloadContent:(SKDownload *)download {
-    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    NSDictionary *downloadInfo;
+    
+    if (download) {
+        downloadInfo = @{@"download": [download toDictionary]};
+    }
+    else {
+        downloadInfo = @{@"download": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didCancelDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didReceiveProgressDownloadContent:(SKDownload *)download {
-    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    NSDictionary *downloadInfo;
+    
+    if (download) {
+        downloadInfo = @{@"download": [download toDictionary]};
+    }
+    else {
+        downloadInfo = @{@"download": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didReceiveProgressDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailDownloadContent:(SKDownload *)download {
-    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    NSDictionary *downloadInfo;
+    
+    if (download) {
+        downloadInfo = @{@"download": [download toDictionary]};
+    }
+    else {
+        downloadInfo = @{@"download": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didFailDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFinishDownloadContent:(SKDownload *)download {
-    NSDictionary *downloadInfo = @{@"download": [download toDictionary]};
+    NSDictionary *downloadInfo;
+    
+    if (download) {
+        downloadInfo = @{@"download": [download toDictionary]};
+    }
+    else {
+        downloadInfo = @{@"download": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"didFinishDownloadContent" withObject:downloadInfo];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library onReady:(NSDictionary *)info {
-    NSDictionary *applicationInfo = @{@"application": info};
+    NSDictionary *applicationInfo;
+    
+    if (info) {
+        applicationInfo = @{@"application": info};
+    }
+    else {
+        applicationInfo = @{@"application": [NSNull null]};
+    }
+    
     [self performDelegateCallback:@"onReady" withObject:applicationInfo];
 }
 
@@ -515,5 +749,3 @@ const char *sdkVersion() {
 }
 
 @end
-
-

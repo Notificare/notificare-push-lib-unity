@@ -8,11 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-typedef void (*BasicCallback)(const char *jsonUTF8String);
-
-typedef char *(*DelegateCallback)(const char *jsonUTF8String);
-typedef NSString *(^DelegateBlock)(NSString *jsonString);
-
 
 @interface NotificarePushLibUnity : NSObject
 

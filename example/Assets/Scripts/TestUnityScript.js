@@ -9,7 +9,7 @@ class TestUnityScript extends NotificareMonoBehaviour {
 
 	}
 	
-	public function OnReady(application) {
+	public override function OnReady(application:NotificareApplication) {
 		Debug.Log("UnityScript received OnReady");
 	}
 }
