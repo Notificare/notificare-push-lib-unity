@@ -13,7 +13,7 @@
 - (NSDictionary *)toDictionary {
     NSDictionary *info = @{@"productIdentifier":    self.productIdentifier,
                            @"quantity":             [NSNumber numberWithInteger:self.quantity],
-                           @"applicationUsername":  self.applicationUsername};
+                           @"applicationUsername":  self.applicationUsername ? self.applicationUsername : [NSNull null]};
     
     return info;
 }

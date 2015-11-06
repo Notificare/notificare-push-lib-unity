@@ -11,9 +11,9 @@
 @implementation NotificareContent (Dictionary)
 
 - (NSDictionary *)toDictionary {
-    NSDictionary *info = @{@"type":             self.type,
-                           @"data":             self.data,
-                           @"dataDictionary:":  self.dataDictionary};
+    NSDictionary *info = @{@"type":             self.type           ? self.type             : [NSNull null],
+                           @"data":             self.data           ? self.data             : [NSNull null],
+                           @"dataDictionary:":  self.dataDictionary ? self.dataDictionary   : [NSNull null]};
     
     return info;
 }

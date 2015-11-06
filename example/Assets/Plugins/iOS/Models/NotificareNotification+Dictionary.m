@@ -13,25 +13,26 @@
 #import "NotificareContent+Dictionary.h"
 #import "NotificareSegment+Dictionary.h"
 
+
 @implementation NotificareNotification (Dictionary)
 
 - (NSDictionary *)toDictionary {
-    NSDictionary *info = @{@"notificationID":           self.notificationID,
-                           @"application":              self.application,
-                           @"notificationType":         self.notificationType,
-                           @"notificationTime":         self.notificationTime,
-                           @"notificationMessage":      self.notificationMessage,
-                           @"notificationLatitude":     self.notificationLatitude,
-                           @"notificationLongitude":    self.notificationLongitude,
-                           @"notificationDistance":     self.notificationDistance,
+    NSDictionary *info = @{@"notificationID":           self.notificationID         ? self.notificationID       : [NSNull null],
+                           @"application":              self.application            ? self.application          : [NSNull null],
+                           @"notificationType":         self.notificationType       ? self.notificationType     : [NSNull null],
+                           @"notificationTime":         self.notificationTime       ? self.notificationTime     : [NSNull null],
+                           @"notificationMessage":      self.notificationMessage    ? self.notificationMessage  : [NSNull null],
+                           @"notificationLatitude":     self.notificationLatitude   ? [NSNumber numberWithDouble:[self.notificationLatitude doubleValue]]   : @0.0,
+                           @"notificationLongitude":    self.notificationLongitude  ? [NSNumber numberWithDouble:[self.notificationLongitude doubleValue]]  : @0.0,
+                           @"notificationDistance":     self.notificationDistance   ? [NSNumber numberWithDouble:[self.notificationDistance doubleValue]]   : @0.0,
                            @"notificationContent":      [self getDictionaryContent],
                            @"notificationActions":      [self getDictionaryActions],
                            @"notificationAttachments":  [self getDictionaryAttachments],
-                           @"notificationTags":         self.notificationTags,
+                           @"notificationTags":         self.notificationTags       ? self.notificationTags     : [NSNull null],
                            @"notificationSegments":     [self getDictionarySegments],
-                           @"notificationExtra":        self.notificationExtra,
-                           @"notificationInfo":         self.notificationInfo,
-                           @"displayMessage":           self.displayMessage};
+                           @"notificationExtra":        self.notificationExtra      ? self.notificationExtra    : [NSNull null],
+                           @"notificationInfo":         self.notificationInfo       ? self.notificationInfo     : [NSNull null],
+                           @"displayMessage":           self.displayMessage ? [NSNumber numberWithInt:[self.displayMessage intValue]] : @0};
     
     return info;
 }

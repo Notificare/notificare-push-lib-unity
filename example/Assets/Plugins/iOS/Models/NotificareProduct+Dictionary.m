@@ -35,17 +35,17 @@
 }
 
 - (NSDictionary *)toDictionary {
-    NSDictionary *info = @{@"productName":         self.productName,
-                           @"productDescription":  self.productDescription,
-                           @"type":                self.type,
-                           @"application":         self.application,
+    NSDictionary *info = @{@"productName":         self.productName         ? self.productName          : [NSNull null],
+                           @"productDescription":  self.productDescription  ? self.productDescription   : [NSNull null],
+                           @"type":                self.type                ? self.type                 : [NSNull null],
+                           @"application":         self.application         ? self.application          : [NSNull null],
                            @"identifier":          self.identifier,
                            // stores?
                            @"downloads":           [self getDictionaryDownloads],
-                           @"date":                self.date,
-                           @"priceLocale":         self.priceLocale,
-                           @"price":               self.price,
-                           @"currency":            self.currency,
+                           @"date":                self.date                ? self.date                 : [NSNull null],
+                           @"priceLocale":         self.priceLocale         ? self.priceLocale          : [NSNull null],
+                           @"price":               self.price               ? self.price                : [NSNull null],
+                           @"currency":            self.currency            ?self.currency              : [NSNull null],
                            @"active":              [NSNumber numberWithBool:self.active],
                            @"purchased":           [NSNumber numberWithBool:self.purchased]};
     

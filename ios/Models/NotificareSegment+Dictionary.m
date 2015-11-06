@@ -11,9 +11,9 @@
 @implementation NotificareSegment (Dictionary)
 
 - (NSDictionary *)toDictionary {
-    NSDictionary *info = @{@"string":   self.segmentLabel,
-                           @"string":   self.segmentId,
-                           @"selected": [NSNumber numberWithBool:self.selected]};
+    NSDictionary *info = @{@"segmentLabel": self.segmentLabel   ? self.segmentLabel : [NSNull null],
+                           @"segmentId":    self.segmentId      ? self.segmentId    : [NSNull null],
+                           @"selected":     [NSNumber numberWithBool:self.selected]};
     
     return info;
 }

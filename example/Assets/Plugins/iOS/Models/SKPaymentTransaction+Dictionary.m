@@ -15,17 +15,17 @@
 @implementation SKPaymentTransaction (Dictionary)
 
 - (NSDictionary *)toDictionary {
-    NSDictionary *info = @{@"error":                    self.error ? self.error.description : nil,
-                           @"payment":                  self.payment ? [self.payment toDictionary] : nil,
-                           @"transactionState":         [self getTransactionStateString],
-                           @"transactionIdentifier":    self.transactionIdentifier,
-                           @"transactionDate":          [self.transactionDate isoString],
+    NSDictionary *info = @{@"error":                    self.error                  ? self.error.description            : [NSNull null],
+                           @"payment":                  self.payment                ? [self.payment toDictionary]       : [NSNull null],
+                           @"transactionState":         [self getTransactionStateObject],
+                           @"transactionIdentifier":    self.transactionIdentifier  ? self.transactionIdentifier        : [NSNull null],
+                           @"transactionDate":          self.transactionDate        ? [self.transactionDate isoString]  : [NSNull null],
                            @"downloads":                [self getDictionaryDownloads]};
     
     return info;
 }
 
-- (NSString *)getTransactionStateString {
+- (id)getTransactionStateObject {
     switch (self.transactionState) {
         case SKPaymentTransactionStatePurchasing:
             return @"SKPaymentTransactionStatePurchasing";
@@ -48,7 +48,7 @@
             break;
             
         default:
-            return nil;
+            return [NSNull null];
             break;
     }
 }

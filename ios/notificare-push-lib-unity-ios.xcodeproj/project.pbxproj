@@ -7,44 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4E084B291BE10BAB00D3907C /* NotificareAction+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E084B281BE10BAB00D3907C /* NotificareAction+Dictionary.m */; };
-		4E084B2C1BE10D6D00D3907C /* NotificareAttachment+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E084B2B1BE10D6D00D3907C /* NotificareAttachment+Dictionary.m */; };
-		4E084B2F1BE10DDE00D3907C /* NotificareContent+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E084B2E1BE10DDE00D3907C /* NotificareContent+Dictionary.m */; };
-		4E084B321BE10E4E00D3907C /* NotificareSegment+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E084B311BE10E4E00D3907C /* NotificareSegment+Dictionary.m */; };
-		4E237F941BD9A79900118F8A /* NotificareProduct+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237F931BD9A79900118F8A /* NotificareProduct+Dictionary.m */; };
-		4E237F971BD9A7BD00118F8A /* NotificareNotification+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237F961BD9A7BD00118F8A /* NotificareNotification+Dictionary.m */; };
-		4E237F9A1BDA58C500118F8A /* SKDownload+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237F991BDA58C500118F8A /* SKDownload+Dictionary.m */; };
-		4E237F9D1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237F9C1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m */; };
-		4E237FA01BDA6B2000118F8A /* SKPayment+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237F9F1BDA6B2000118F8A /* SKPayment+Dictionary.m */; };
-		4E237FA31BDA726200118F8A /* NSDate+ISOString.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E237FA21BDA726200118F8A /* NSDate+ISOString.m */; };
 		4E7FD8A61BCE7B0C002CDC34 /* DefaultTheme.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 4E7FD82E1BCE7B0C002CDC34 /* DefaultTheme.bundle */; };
 		4E7FD8A71BCE7B0C002CDC34 /* libNotificarePushLib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E7FD82F1BCE7B0C002CDC34 /* libNotificarePushLib.a */; };
 		4E7FD8A81BCE7B0C002CDC34 /* Notificare.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4E7FD8A11BCE7B0C002CDC34 /* Notificare.plist */; };
 		4E7FD8A91BCE7B0C002CDC34 /* NotificareTags.plist in Resources */ = {isa = PBXBuildFile; fileRef = 4E7FD8A21BCE7B0C002CDC34 /* NotificareTags.plist */; };
 		4E7FD8AB1BCE7B1E002CDC34 /* NotificarePushLibUnity.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E7FD79B1BCE795A002CDC34 /* NotificarePushLibUnity.m */; };
+		4E98E94F1BEC2C6900B4B26D /* NotificareAction+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E93C1BEC2C6900B4B26D /* NotificareAction+Dictionary.m */; };
+		4E98E9501BEC2C6900B4B26D /* NotificareAttachment+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E93E1BEC2C6900B4B26D /* NotificareAttachment+Dictionary.m */; };
+		4E98E9511BEC2C6900B4B26D /* NotificareContent+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E9401BEC2C6900B4B26D /* NotificareContent+Dictionary.m */; };
+		4E98E9521BEC2C6900B4B26D /* NotificareNotification+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E9421BEC2C6900B4B26D /* NotificareNotification+Dictionary.m */; };
+		4E98E9531BEC2C6900B4B26D /* NotificareProduct+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E9441BEC2C6900B4B26D /* NotificareProduct+Dictionary.m */; };
+		4E98E9541BEC2C6900B4B26D /* NotificareSegment+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E9461BEC2C6900B4B26D /* NotificareSegment+Dictionary.m */; };
+		4E98E9551BEC2C6900B4B26D /* NSDate+ISOString.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E9481BEC2C6900B4B26D /* NSDate+ISOString.m */; };
+		4E98E9561BEC2C6900B4B26D /* SKDownload+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E94A1BEC2C6900B4B26D /* SKDownload+Dictionary.m */; };
+		4E98E9571BEC2C6900B4B26D /* SKPayment+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E94C1BEC2C6900B4B26D /* SKPayment+Dictionary.m */; };
+		4E98E9581BEC2C6900B4B26D /* SKPaymentTransaction+Dictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = 4E98E94E1BEC2C6900B4B26D /* SKPaymentTransaction+Dictionary.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4E084B271BE10BAB00D3907C /* NotificareAction+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareAction+Dictionary.h"; path = "Models/NotificareAction+Dictionary.h"; sourceTree = "<group>"; };
-		4E084B281BE10BAB00D3907C /* NotificareAction+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareAction+Dictionary.m"; path = "Models/NotificareAction+Dictionary.m"; sourceTree = "<group>"; };
-		4E084B2A1BE10D6D00D3907C /* NotificareAttachment+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareAttachment+Dictionary.h"; path = "Models/NotificareAttachment+Dictionary.h"; sourceTree = "<group>"; };
-		4E084B2B1BE10D6D00D3907C /* NotificareAttachment+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareAttachment+Dictionary.m"; path = "Models/NotificareAttachment+Dictionary.m"; sourceTree = "<group>"; };
-		4E084B2D1BE10DDE00D3907C /* NotificareContent+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareContent+Dictionary.h"; path = "Models/NotificareContent+Dictionary.h"; sourceTree = "<group>"; };
-		4E084B2E1BE10DDE00D3907C /* NotificareContent+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareContent+Dictionary.m"; path = "Models/NotificareContent+Dictionary.m"; sourceTree = "<group>"; };
-		4E084B301BE10E4E00D3907C /* NotificareSegment+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareSegment+Dictionary.h"; path = "Models/NotificareSegment+Dictionary.h"; sourceTree = "<group>"; };
-		4E084B311BE10E4E00D3907C /* NotificareSegment+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareSegment+Dictionary.m"; path = "Models/NotificareSegment+Dictionary.m"; sourceTree = "<group>"; };
-		4E237F921BD9A79900118F8A /* NotificareProduct+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareProduct+Dictionary.h"; path = "Models/NotificareProduct+Dictionary.h"; sourceTree = "<group>"; };
-		4E237F931BD9A79900118F8A /* NotificareProduct+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareProduct+Dictionary.m"; path = "Models/NotificareProduct+Dictionary.m"; sourceTree = "<group>"; };
-		4E237F951BD9A7BD00118F8A /* NotificareNotification+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareNotification+Dictionary.h"; path = "Models/NotificareNotification+Dictionary.h"; sourceTree = "<group>"; };
-		4E237F961BD9A7BD00118F8A /* NotificareNotification+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareNotification+Dictionary.m"; path = "Models/NotificareNotification+Dictionary.m"; sourceTree = "<group>"; };
-		4E237F981BDA58C500118F8A /* SKDownload+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SKDownload+Dictionary.h"; path = "Models/SKDownload+Dictionary.h"; sourceTree = "<group>"; };
-		4E237F991BDA58C500118F8A /* SKDownload+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SKDownload+Dictionary.m"; path = "Models/SKDownload+Dictionary.m"; sourceTree = "<group>"; };
-		4E237F9B1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SKPaymentTransaction+Dictionary.h"; path = "Models/SKPaymentTransaction+Dictionary.h"; sourceTree = "<group>"; };
-		4E237F9C1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SKPaymentTransaction+Dictionary.m"; path = "Models/SKPaymentTransaction+Dictionary.m"; sourceTree = "<group>"; };
-		4E237F9E1BDA6B2000118F8A /* SKPayment+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SKPayment+Dictionary.h"; path = "Models/SKPayment+Dictionary.h"; sourceTree = "<group>"; };
-		4E237F9F1BDA6B2000118F8A /* SKPayment+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SKPayment+Dictionary.m"; path = "Models/SKPayment+Dictionary.m"; sourceTree = "<group>"; };
-		4E237FA11BDA726200118F8A /* NSDate+ISOString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDate+ISOString.h"; path = "Models/NSDate+ISOString.h"; sourceTree = "<group>"; };
-		4E237FA21BDA726200118F8A /* NSDate+ISOString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+ISOString.m"; path = "Models/NSDate+ISOString.m"; sourceTree = "<group>"; };
 		4E7FD79A1BCE795A002CDC34 /* NotificarePushLibUnity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NotificarePushLibUnity.h; sourceTree = "<group>"; };
 		4E7FD79B1BCE795A002CDC34 /* NotificarePushLibUnity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NotificarePushLibUnity.m; sourceTree = "<group>"; };
 		4E7FD8241BCE7ACB002CDC34 /* notificare-push-lib-unity-ios.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "notificare-push-lib-unity-ios.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -135,6 +115,26 @@
 		4E7FD8A01BCE7B0C002CDC34 /* NotificareWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NotificareWebView.h; sourceTree = "<group>"; };
 		4E7FD8A11BCE7B0C002CDC34 /* Notificare.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Notificare.plist; sourceTree = "<group>"; };
 		4E7FD8A21BCE7B0C002CDC34 /* NotificareTags.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = NotificareTags.plist; sourceTree = "<group>"; };
+		4E98E93B1BEC2C6900B4B26D /* NotificareAction+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareAction+Dictionary.h"; path = "Models/NotificareAction+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E93C1BEC2C6900B4B26D /* NotificareAction+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareAction+Dictionary.m"; path = "Models/NotificareAction+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E93D1BEC2C6900B4B26D /* NotificareAttachment+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareAttachment+Dictionary.h"; path = "Models/NotificareAttachment+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E93E1BEC2C6900B4B26D /* NotificareAttachment+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareAttachment+Dictionary.m"; path = "Models/NotificareAttachment+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E93F1BEC2C6900B4B26D /* NotificareContent+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareContent+Dictionary.h"; path = "Models/NotificareContent+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E9401BEC2C6900B4B26D /* NotificareContent+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareContent+Dictionary.m"; path = "Models/NotificareContent+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E9411BEC2C6900B4B26D /* NotificareNotification+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareNotification+Dictionary.h"; path = "Models/NotificareNotification+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E9421BEC2C6900B4B26D /* NotificareNotification+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareNotification+Dictionary.m"; path = "Models/NotificareNotification+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E9431BEC2C6900B4B26D /* NotificareProduct+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareProduct+Dictionary.h"; path = "Models/NotificareProduct+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E9441BEC2C6900B4B26D /* NotificareProduct+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareProduct+Dictionary.m"; path = "Models/NotificareProduct+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E9451BEC2C6900B4B26D /* NotificareSegment+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NotificareSegment+Dictionary.h"; path = "Models/NotificareSegment+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E9461BEC2C6900B4B26D /* NotificareSegment+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NotificareSegment+Dictionary.m"; path = "Models/NotificareSegment+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E9471BEC2C6900B4B26D /* NSDate+ISOString.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSDate+ISOString.h"; path = "Models/NSDate+ISOString.h"; sourceTree = "<group>"; };
+		4E98E9481BEC2C6900B4B26D /* NSDate+ISOString.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "NSDate+ISOString.m"; path = "Models/NSDate+ISOString.m"; sourceTree = "<group>"; };
+		4E98E9491BEC2C6900B4B26D /* SKDownload+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SKDownload+Dictionary.h"; path = "Models/SKDownload+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E94A1BEC2C6900B4B26D /* SKDownload+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SKDownload+Dictionary.m"; path = "Models/SKDownload+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E94B1BEC2C6900B4B26D /* SKPayment+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SKPayment+Dictionary.h"; path = "Models/SKPayment+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E94C1BEC2C6900B4B26D /* SKPayment+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SKPayment+Dictionary.m"; path = "Models/SKPayment+Dictionary.m"; sourceTree = "<group>"; };
+		4E98E94D1BEC2C6900B4B26D /* SKPaymentTransaction+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "SKPaymentTransaction+Dictionary.h"; path = "Models/SKPaymentTransaction+Dictionary.h"; sourceTree = "<group>"; };
+		4E98E94E1BEC2C6900B4B26D /* SKPaymentTransaction+Dictionary.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "SKPaymentTransaction+Dictionary.m"; path = "Models/SKPaymentTransaction+Dictionary.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,26 +152,26 @@
 		4E237F8A1BD9A24000118F8A /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				4E084B271BE10BAB00D3907C /* NotificareAction+Dictionary.h */,
-				4E084B281BE10BAB00D3907C /* NotificareAction+Dictionary.m */,
-				4E084B2A1BE10D6D00D3907C /* NotificareAttachment+Dictionary.h */,
-				4E084B2B1BE10D6D00D3907C /* NotificareAttachment+Dictionary.m */,
-				4E084B2D1BE10DDE00D3907C /* NotificareContent+Dictionary.h */,
-				4E084B2E1BE10DDE00D3907C /* NotificareContent+Dictionary.m */,
-				4E237F951BD9A7BD00118F8A /* NotificareNotification+Dictionary.h */,
-				4E237F961BD9A7BD00118F8A /* NotificareNotification+Dictionary.m */,
-				4E237F921BD9A79900118F8A /* NotificareProduct+Dictionary.h */,
-				4E237F931BD9A79900118F8A /* NotificareProduct+Dictionary.m */,
-				4E084B301BE10E4E00D3907C /* NotificareSegment+Dictionary.h */,
-				4E084B311BE10E4E00D3907C /* NotificareSegment+Dictionary.m */,
-				4E237F981BDA58C500118F8A /* SKDownload+Dictionary.h */,
-				4E237F991BDA58C500118F8A /* SKDownload+Dictionary.m */,
-				4E237F9E1BDA6B2000118F8A /* SKPayment+Dictionary.h */,
-				4E237F9F1BDA6B2000118F8A /* SKPayment+Dictionary.m */,
-				4E237F9B1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.h */,
-				4E237F9C1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m */,
-				4E237FA11BDA726200118F8A /* NSDate+ISOString.h */,
-				4E237FA21BDA726200118F8A /* NSDate+ISOString.m */,
+				4E98E93B1BEC2C6900B4B26D /* NotificareAction+Dictionary.h */,
+				4E98E93C1BEC2C6900B4B26D /* NotificareAction+Dictionary.m */,
+				4E98E93D1BEC2C6900B4B26D /* NotificareAttachment+Dictionary.h */,
+				4E98E93E1BEC2C6900B4B26D /* NotificareAttachment+Dictionary.m */,
+				4E98E93F1BEC2C6900B4B26D /* NotificareContent+Dictionary.h */,
+				4E98E9401BEC2C6900B4B26D /* NotificareContent+Dictionary.m */,
+				4E98E9411BEC2C6900B4B26D /* NotificareNotification+Dictionary.h */,
+				4E98E9421BEC2C6900B4B26D /* NotificareNotification+Dictionary.m */,
+				4E98E9431BEC2C6900B4B26D /* NotificareProduct+Dictionary.h */,
+				4E98E9441BEC2C6900B4B26D /* NotificareProduct+Dictionary.m */,
+				4E98E9451BEC2C6900B4B26D /* NotificareSegment+Dictionary.h */,
+				4E98E9461BEC2C6900B4B26D /* NotificareSegment+Dictionary.m */,
+				4E98E9471BEC2C6900B4B26D /* NSDate+ISOString.h */,
+				4E98E9481BEC2C6900B4B26D /* NSDate+ISOString.m */,
+				4E98E9491BEC2C6900B4B26D /* SKDownload+Dictionary.h */,
+				4E98E94A1BEC2C6900B4B26D /* SKDownload+Dictionary.m */,
+				4E98E94B1BEC2C6900B4B26D /* SKPayment+Dictionary.h */,
+				4E98E94C1BEC2C6900B4B26D /* SKPayment+Dictionary.m */,
+				4E98E94D1BEC2C6900B4B26D /* SKPaymentTransaction+Dictionary.h */,
+				4E98E94E1BEC2C6900B4B26D /* SKPaymentTransaction+Dictionary.m */,
 			);
 			name = Models;
 			sourceTree = "<group>";
@@ -622,16 +622,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				4E7FD8AB1BCE7B1E002CDC34 /* NotificarePushLibUnity.m in Sources */,
-				4E084B2F1BE10DDE00D3907C /* NotificareContent+Dictionary.m in Sources */,
-				4E084B2C1BE10D6D00D3907C /* NotificareAttachment+Dictionary.m in Sources */,
-				4E237F9D1BDA62C300118F8A /* SKPaymentTransaction+Dictionary.m in Sources */,
-				4E237F9A1BDA58C500118F8A /* SKDownload+Dictionary.m in Sources */,
-				4E084B291BE10BAB00D3907C /* NotificareAction+Dictionary.m in Sources */,
-				4E084B321BE10E4E00D3907C /* NotificareSegment+Dictionary.m in Sources */,
-				4E237FA31BDA726200118F8A /* NSDate+ISOString.m in Sources */,
-				4E237F971BD9A7BD00118F8A /* NotificareNotification+Dictionary.m in Sources */,
-				4E237FA01BDA6B2000118F8A /* SKPayment+Dictionary.m in Sources */,
-				4E237F941BD9A79900118F8A /* NotificareProduct+Dictionary.m in Sources */,
+				4E98E9561BEC2C6900B4B26D /* SKDownload+Dictionary.m in Sources */,
+				4E98E9581BEC2C6900B4B26D /* SKPaymentTransaction+Dictionary.m in Sources */,
+				4E98E9551BEC2C6900B4B26D /* NSDate+ISOString.m in Sources */,
+				4E98E9541BEC2C6900B4B26D /* NotificareSegment+Dictionary.m in Sources */,
+				4E98E9531BEC2C6900B4B26D /* NotificareProduct+Dictionary.m in Sources */,
+				4E98E9511BEC2C6900B4B26D /* NotificareContent+Dictionary.m in Sources */,
+				4E98E9501BEC2C6900B4B26D /* NotificareAttachment+Dictionary.m in Sources */,
+				4E98E9521BEC2C6900B4B26D /* NotificareNotification+Dictionary.m in Sources */,
+				4E98E9571BEC2C6900B4B26D /* SKPayment+Dictionary.m in Sources */,
+				4E98E94F1BEC2C6900B4B26D /* NotificareAction+Dictionary.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -11,9 +11,9 @@
 @implementation NotificareAction (Dictionary)
 
 - (NSDictionary *)toDictionary {
-    NSDictionary *info = @{@"actionType":       self.actionType,
-                           @"actionLabel":      self.actionLabel,
-                           @"actionTarget":     self.actionTarget,
+    NSDictionary *info = @{@"actionType":       self.actionType     ? self.actionType   : [NSNull null],
+                           @"actionLabel":      self.actionLabel    ? self.actionLabel  : [NSNull null],
+                           @"actionTarget":     self.actionTarget   ? self.actionTarget : [NSNull null],
                            @"actionKeyboard":   [NSNumber numberWithBool:self.actionKeyboard],
                            @"actionCamera":     [NSNumber numberWithBool:self.actionCamera]};
     

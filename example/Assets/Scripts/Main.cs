@@ -35,9 +35,24 @@ public class Main : NotificareMonoBehaviour {
 
 	public override void DidRegisterDevice(Dictionary<string, object> registration) {
 		Debug.Log("DidRegisterDevice");
+
+		if (notificarePushLib.CheckLocationUpdates()) {
+			Debug.Log("Authorized");
+		}
+		else {
+			Debug.Log("Not Authorized");
+		}
+
+		notificarePushLib.StartLocationUpdates();
 	}
 
 	public override void DidFailToRegisterDevice(string error) {
 		Debug.Log("DidFailToRegisterDevice: " + error);
+	}
+
+	public override void DidReceiveRemoteNotification (Notification notification) {
+		notificarePushLib.OpenNotification(notification);
+
+		Debug.Log("Received Notification: " + notification.aps.alert);
 	}
 }

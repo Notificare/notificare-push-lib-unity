@@ -11,8 +11,8 @@
 @implementation NotificareAttachment (Dictionary)
 
 - (NSDictionary *)toDictionary {
-    NSDictionary *info = @{@"attachmentURI":        self.attachmentURI,
-                           @"attachmentMimeType":   self.attachmentMimeType};
+    NSDictionary *info = @{@"attachmentURI":        self.attachmentURI      ? self.attachmentURI        : [NSNull null],
+                           @"attachmentMimeType":   self.attachmentMimeType ? self.attachmentMimeType   : [NSNull  null]};
     
     return info;
 }

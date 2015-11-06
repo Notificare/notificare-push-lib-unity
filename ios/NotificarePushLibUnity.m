@@ -40,17 +40,6 @@ NSString *stringWithChar(const char *utf8String) {
     return utf8String ? [NSString stringWithUTF8String:utf8String] : nil;
 }
 
-/*char *cStringCopy(const char* cString) {
- if (cString == NULL) {
- return NULL;
- }
- 
- char* buffer = (char *)malloc(strlen(cString) + 1);
- strcpy(buffer, cString);
- 
- return buffer;
- }*/
-
 NSString *jsonStringFromObject(id object) {
     if (![NSJSONSerialization isValidJSONObject:object]) {
         return nil;
@@ -73,7 +62,7 @@ NSString *jsonStringFromObject(id object) {
 }
 
 id objectFromJSONString(NSString *jsonString) {
-    NSData *data = [NSData dataWithContentsOfFile:jsonString];
+    NSData *data = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
     
     NSError *error;
     id object = [NSJSONSerialization JSONObjectWithData:data
@@ -93,11 +82,7 @@ void performBasicCallback(BasicCallback callback, id object) {
     NSString *jsonString = jsonStringFromObject(object);
     
     if (callback) {
-        // char *strCopy = cStringCopy([jsonString UTF8String]);
-        
         callback([jsonString UTF8String]);
-        
-        //free(strCopy);
     }
 }
 
@@ -118,6 +103,35 @@ NSArray *filterDownloads(NSArray *downloadDicts) {
     return [filteredDownloads copy];
 }
 
+
+#pragma mark - Exported Properties
+
+bool _isOpen() {
+    return [[NotificarePushLib shared] isOpen];
+}
+
+bool _isFixingGPS() {
+    return [[NotificarePushLib shared] isFixingGPS];
+}
+
+bool _displayMessage() {
+    return [[NotificarePushLib shared] displayMessage];
+}
+
+const char *_notificationQueue() {
+    NSDictionary *notificationQueueInfo = @{@"notifications": [[NotificarePushLib shared] notificationQueue]};
+    NSString *jsonString = jsonStringFromObject(notificationQueueInfo);
+    
+    return [jsonString UTF8String];
+}
+
+const char *_activeNotification() {
+    NSDictionary *activeNotificationInfo = @{@"notification": [[NotificarePushLib shared] activeNotification]};
+    NSString *jsonString = jsonStringFromObject(activeNotificationInfo);
+    
+    return [jsonString UTF8String];
+}
+
 #pragma mark - Exported Functions
 
 void _registerDelegateCallback(const char* delegateMethod, DelegateCallback callback) {
@@ -126,11 +140,7 @@ void _registerDelegateCallback(const char* delegateMethod, DelegateCallback call
     
     if (key && callback) {
         DelegateBlock delegateBlock = ^NSString *(NSString *str) {
-            //char *strCopy = cStringCopy([str UTF8String]);
-            
             char *result = callback([str UTF8String]);
-            
-            //free(strCopy);
             
             return stringWithChar(result);
         };
@@ -302,7 +312,6 @@ void _stopLocationUpdates() {
     [[NotificarePushLib shared] stopLocationUpdates];
 }
 
-#warning Needs confirmation that it properly overlays on top of Unity view
 void _openUserPreferences() {
     [[NotificarePushLib shared] openUserPreferences];
 }
@@ -321,7 +330,7 @@ void _fetchProducts(BasicCallback productsCallback, BasicCallback errorCallback)
                 [dictionaryProducts addObject:[product toDictionary]];
             }
             
-            productsInfo = @{@"products": [dictionaryProducts copy]};
+            productsInfo = @{@"products": dictionaryProducts};
         }
         else {
             productsInfo = @{@"products": [NSNull null]};
@@ -352,7 +361,7 @@ void _fetchPurchasedProducts(BasicCallback productsCallback, BasicCallback error
                 [dictionaryProducts addObject:[product toDictionary]];
             }
             
-            productsInfo = @{@"products": [dictionaryProducts copy]};
+            productsInfo = @{@"products": dictionaryProducts};
         }
         else {
             productsInfo = @{@"products": [NSNull null]};
@@ -442,7 +451,7 @@ const char *_contentPathForProduct(const char *productIdentifier) {
     return contentPathString.UTF8String;
 }
 
-const char *sdkVersion() {
+const char *_sdkVersion() {
     return [[[NotificarePushLib shared] sdkVersion] UTF8String];
 }
 
@@ -505,16 +514,16 @@ const char *sdkVersion() {
     NSString *jsonString = [self performDelegateCallback:@"shouldHandleNotification" withObject:notificationInfo];
     
     if (!jsonString) {
-        return NO;
+        return YES;
     }
     
     NSDictionary *resultInfo = objectFromJSONString(jsonString);
     
     if (!resultInfo) {
-        return NO;
+        return YES;
     }
     
-    return resultInfo[@"shouldHandleNotification"] ? [resultInfo[@"shouldHandleNotification"] boolValue] : NO;
+    return resultInfo[@"shouldHandleNotification"] ? [resultInfo[@"shouldHandleNotification"] boolValue] : YES;
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didUpdateBadge:(int)badge {
@@ -583,7 +592,7 @@ const char *sdkVersion() {
             [productDicts addObject:[product toDictionary]];
         }
         
-        productsInfo = @{@"products": [productDicts copy]};
+        productsInfo = @{@"products": productDicts};
     }
     else {
         productsInfo = @{@"products": [NSNull null]};

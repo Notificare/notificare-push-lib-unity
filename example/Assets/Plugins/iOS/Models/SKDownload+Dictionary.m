@@ -16,16 +16,16 @@
     NSDictionary *info = @{@"contentIdentifier":        self.contentIdentifier,
                            @"contentLength":            [NSNumber numberWithLongLong:self.contentLength],
                            @"contentVersion":           self.contentVersion,
-                           @"transactionIdentifier":    self.transaction.transactionIdentifier,
-                           @"state":                    [self getStateString],
+                           @"transactionIdentifier":    self.transaction.transactionIdentifier ? self.transaction.transactionIdentifier : [NSNull null],
+                           @"state":                    [self getStateObject],
                            @"progress":                 [NSNumber numberWithFloat:self.progress],
-                           @"error":                    self.error ? [self.error description] : nil,
-                           @"contentURL":               self.contentURL ? self.contentURL.absoluteString : nil};
+                           @"error":                    self.error ? [self.error description] : [NSNull null],
+                           @"contentURL":               self.contentURL.absoluteString ? self.contentURL.absoluteString : [NSNull null]};
     
     return info;
 }
 
-- (NSString *)getStateString {
+- (id)getStateObject {
     /*switch (self.state) {
         case SKDownloadStateWaiting:
             return @"SKDownloadStateWaiting";
@@ -52,11 +52,11 @@
             break;
             
         default:
-            return nil;
+            return [NSNull null];
             break;
     }*/
     
-    return nil;
+    return [NSNull null];
 }
 
 @end
