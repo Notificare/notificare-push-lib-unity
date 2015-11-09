@@ -12,6 +12,7 @@
 @interface NotificarePushLibUnity : NSObject
 
 @property (nonatomic, strong) NSMutableDictionary *delegateCallbacks;
+@property (nonatomic, strong) NSArray *products;
 
 + (instancetype)shared;
 

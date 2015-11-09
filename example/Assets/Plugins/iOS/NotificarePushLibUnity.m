@@ -322,6 +322,8 @@ int _myBadge() {
 
 void _fetchProducts(BasicCallback productsCallback, BasicCallback errorCallback) {
     [[NotificarePushLib shared] fetchProducts:^(NSArray *products) {
+        [[NotificarePushLibUnity shared] setProducts:products];
+        
         NSDictionary *productsInfo;
         
         if (products) {
@@ -417,7 +419,23 @@ void _buyProduct(const char *productJSON) {
     NSDictionary *productInfo = objectFromJSONString(jsonString);
     NotificareProduct *notificareProduct = [[NotificareProduct alloc] initWithDictionary:productInfo[@"product"]];
     
-    [[NotificarePushLib shared] buyProduct:notificareProduct];
+    BOOL productFound = NO;
+    
+    for (NotificareProduct *otherProduct in [[NotificarePushLibUnity shared] products]) {
+        if ([otherProduct.identifier isEqualToString:notificareProduct.identifier]) {
+            notificareProduct.product = otherProduct.product;
+            productFound = YES;
+            
+            break;
+        }
+    }
+    
+    if (productFound) {
+        [[NotificarePushLib shared] buyProduct:notificareProduct];
+    }
+    else {
+        NSLog(@"Notificare: Could not find product with identifier \"%@\"", notificareProduct.identifier);
+    }
 }
 
 void _pauseDownloads(const char* downloadsJSON) {
@@ -583,6 +601,8 @@ const char *_sdkVersion() {
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didLoadStore:(NSArray *)products {
+    self.products = products;
+    
     NSDictionary *productsInfo;
     
     if (products) {

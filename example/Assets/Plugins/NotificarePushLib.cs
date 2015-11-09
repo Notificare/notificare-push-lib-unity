@@ -829,6 +829,7 @@ public class NotificarePushLib:Singleton<NotificarePushLib> {
 	}
 
 	public void UnregisterDevice() {
+		StopCoroutine(CheckForNotifications());
 		_unregisterDevice();
 	}
 

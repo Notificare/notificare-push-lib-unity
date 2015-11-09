@@ -49,10 +49,4 @@ public class Main : NotificareMonoBehaviour {
 	public override void DidFailToRegisterDevice(string error) {
 		Debug.Log("DidFailToRegisterDevice: " + error);
 	}
-
-	public override void DidReceiveRemoteNotification (Notification notification) {
-		notificarePushLib.OpenNotification(notification);
-
-		Debug.Log("Received Notification: " + notification.aps.alert);
-	}
 }
