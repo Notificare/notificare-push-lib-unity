@@ -661,18 +661,12 @@ const char *_sdkVersion() {
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didFailProductTransaction:(SKPaymentTransaction *)transaction withError:(NSError *)error {
-    NSDictionary *failedTransactionInfo = @{@"transaction": [NSNull null],
-                                            @"error": [NSNull null]};
+    NSMutableDictionary *failedTransactionInfo = [NSMutableDictionary dictionary];
     
-    if (transaction) {
-        [failedTransactionInfo setValue:[transaction toDictionary] forKey:@"transaction"];
-    }
+    failedTransactionInfo[@"transaction"] = transaction ? [transaction toDictionary] : [NSNull null];
+    failedTransactionInfo[@"error"] = error ? error.description : [NSNull null];
     
-    if (error) {
-        [failedTransactionInfo setValue:error.description forKey:@"error"];
-    }
-    
-    [self performDelegateCallback:@"didFailProductTransaction" withObject:failedTransactionInfo];
+    [self performDelegateCallback:@"didFailProductTransaction" withObject:[failedTransactionInfo copy]];
 }
 
 - (void)notificarePushLib:(NotificarePushLib *)library didStartDownloadContent:(SKPaymentTransaction *)transaction {
